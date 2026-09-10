@@ -1,0 +1,20 @@
+{
+  "name": "bowerbirds",
+  "interface": {
+    "displayName": "Bowerbirds"
+  },
+  "plugins": [
+    {
+      "name": "bowerbirds",
+      "source": {
+        "source": "local",
+        "path": "./plugins/bowerbirds"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

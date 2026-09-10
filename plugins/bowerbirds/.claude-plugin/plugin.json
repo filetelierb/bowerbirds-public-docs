@@ -1,0 +1,10 @@
+{
+  "name": "bowerbirds",
+  "version": "0.1.0",
+  "description": "Use Bowerbirds Buckets, captures, payloads, Packages, and human-in-the-loop workflows from Claude Code.",
+  "author": {
+    "name": "Bowerbirds"
+  },
+  "homepage": "https://bowerbirds.app",
+  "repository": "https://github.com/filetelierb/bowerbirds-public-docs"
+}
