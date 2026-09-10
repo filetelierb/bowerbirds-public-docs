@@ -1,0 +1,68 @@
+---
+title: "Cursor"
+description: "Connect a Cursor project to the local or remote Bowerbirds MCP server."
+icon: "code"
+---
+
+## Bowerbirds plugin
+
+This repository contains a native Cursor plugin manifest. Until it is accepted into the public Cursor Marketplace, test it from a clone:
+
+```sh
+git clone https://github.com/filetelierb/bowerbirds-public-docs.git
+mkdir -p ~/.cursor/plugins/local
+ln -s "$PWD/bowerbirds-public-docs/plugins/bowerbirds" \
+  ~/.cursor/plugins/local/bowerbirds
+```
+
+Restart Cursor or run **Developer: Reload Window**, then open **Customize** and enable Bowerbirds. The plugin adds both the local MCP connection and Bowerbirds workflow guidance.
+
+## MCP-only setup
+
+Create `.cursor/mcp.json` in a project for a project-scoped connection, or use `~/.cursor/mcp.json` for all projects.
+
+## Local Bowerbirds
+
+```json
+{
+  "mcpServers": {
+    "bowerbirds": {
+      "command": "/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Restart Cursor, open MCP settings, and confirm that the server and tools are enabled.
+
+## One cloud Bucket
+
+Export the token before starting Cursor:
+
+```sh
+export BOWERBIRDS_AGENT_TOKEN='bbt_...'
+```
+
+Then use:
+
+```json
+{
+  "mcpServers": {
+    "bowerbirds-cloud": {
+      "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:BOWERBIRDS_AGENT_TOKEN}"
+      }
+    }
+  }
+}
+```
+
+If your Cursor version uses a different environment interpolation syntax, add the HTTP server through Cursor's MCP settings UI and store the bearer token there. Never commit a `bbt_` token to the project.
+
+<Note>
+  The plugin is ready for local testing but has not been submitted to the public Cursor Marketplace. The MCP-only setup works without marketplace review.
+</Note>
+
+See Cursor's [plugin](https://cursor.com/docs/plugins) and [MCP](https://cursor.com/docs/mcp) documentation for client-level settings and diagnostics.

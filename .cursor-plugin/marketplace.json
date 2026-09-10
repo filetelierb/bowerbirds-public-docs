@@ -1,0 +1,18 @@
+{
+  "name": "bowerbirds",
+  "owner": {
+    "name": "Bowerbirds"
+  },
+  "metadata": {
+    "description": "Official Bowerbirds integrations for Cursor."
+  },
+  "plugins": [
+    {
+      "name": "bowerbirds",
+      "source": "./plugins/bowerbirds",
+      "description": "Use your Bowerbirds context from Cursor.",
+      "version": "0.1.0",
+      "category": "Productivity"
+    }
+  ]
+}

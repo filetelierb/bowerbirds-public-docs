@@ -1,0 +1,19 @@
+{
+  "name": "bowerbirds",
+  "version": "0.1.0",
+  "description": "Use Bowerbirds Buckets, captures, payloads, Packages, and human-in-the-loop workflows from Codex.",
+  "author": {
+    "name": "Bowerbirds"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Bowerbirds",
+    "shortDescription": "Use your Bowerbirds context from Codex.",
+    "longDescription": "Connect Codex to the Bowerbirds app on your Mac. Search filed Buckets, inspect captures and payloads, build Packages and Scratchpads, and use explicit human-in-the-loop capture requests.",
+    "developerName": "Bowerbirds",
+    "category": "Productivity",
+    "capabilities": ["MCP", "Skills"],
+    "defaultPrompt": "Use Bowerbirds to inspect my filed context and help with this task. Start by checking the server and listing relevant Buckets; do not modify anything unless I ask."
+  },
+  "mcpServers": "./.mcp.json"
+}

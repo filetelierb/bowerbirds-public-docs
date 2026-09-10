@@ -1,0 +1,17 @@
+{
+  "name": "bowerbirds",
+  "owner": {
+    "name": "Bowerbirds"
+  },
+  "metadata": {
+    "description": "Official Bowerbirds integrations for AI coding clients."
+  },
+  "plugins": [
+    {
+      "name": "bowerbirds",
+      "source": "./plugins/bowerbirds",
+      "description": "Use your Bowerbirds context from Claude Code.",
+      "version": "0.1.0"
+    }
+  ]
+}

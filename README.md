@@ -19,3 +19,14 @@ mint a11y
 ```
 
 The public site is configured by `docs.json`. `.mintignore` defensively excludes internal-vault and documentation-framework paths if they are ever introduced by mistake.
+
+## Client plugins
+
+This repository also distributes a cross-client Bowerbirds plugin from `plugins/bowerbirds`:
+
+- Claude Code discovers it through `.claude-plugin/marketplace.json`.
+- Codex discovers it through `.agents/plugins/marketplace.json`.
+- Cursor discovers it through `.cursor-plugin/marketplace.json`.
+- Antigravity uses the copyable MCP configurations in the public integration guide.
+
+The plugin invokes the CLI bundled with `/Applications/Bowerbirds.app`. Set `BOWERBIRDS_CLI` before starting the client to use a development build instead.

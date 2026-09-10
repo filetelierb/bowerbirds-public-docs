@@ -24,6 +24,7 @@
             "pages": [
               "index",
               "quickstart",
+              "integrations/overview",
               "concepts/architecture",
               "concepts/data-model"
             ]
@@ -53,6 +54,32 @@
               "cloud/sync-and-sharing",
               "cloud/web-capture",
               "concepts/security"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Integrations",
+        "icon": "puzzle-piece",
+        "groups": [
+          {
+            "group": "AI clients",
+            "pages": [
+              "integrations/overview",
+              "integrations/claude",
+              "integrations/openai",
+              "integrations/cursor",
+              "integrations/antigravity"
+            ]
+          },
+          {
+            "group": "Connection reference",
+            "pages": [
+              "mcp/overview",
+              "mcp/local-server",
+              "mcp/remote-server",
+              "mcp/agent-tokens",
+              "reference/troubleshooting"
             ]
           }
         ]
