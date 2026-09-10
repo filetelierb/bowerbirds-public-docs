@@ -1,0 +1,148 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "maple",
+  "name": "Bowerbirds",
+  "description": "Capture context once, then work with it from the Bowerbirds apps, CLI, local MCP server, or cloud.",
+  "colors": {
+    "primary": "#2856A4",
+    "light": "#789CE9",
+    "dark": "#5B82D9"
+  },
+  "logo": {
+    "light": "/assets/logo-light.svg",
+    "dark": "/assets/logo-dark.svg"
+  },
+  "favicon": "/assets/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Guides",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Get started",
+            "pages": [
+              "index",
+              "quickstart",
+              "concepts/architecture",
+              "concepts/data-model"
+            ]
+          },
+          {
+            "group": "Capture",
+            "pages": [
+              "capture/overview",
+              "capture/macos",
+              "capture/ios",
+              "capture/routing-and-triage"
+            ]
+          },
+          {
+            "group": "Workflows",
+            "pages": [
+              "workflows/capture-to-context",
+              "workflows/scratchpads",
+              "workflows/packages",
+              "workflows/video-processing",
+              "workflows/human-input"
+            ]
+          },
+          {
+            "group": "Cloud",
+            "pages": [
+              "cloud/sync-and-sharing",
+              "cloud/web-capture",
+              "concepts/security"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI",
+        "icon": "terminal",
+        "groups": [
+          {
+            "group": "Command line",
+            "pages": [
+              "cli/overview",
+              "cli/local-workflows",
+              "cli/cloud-workflows",
+              "cli/automation"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/cli-commands",
+              "reference/payload-roles",
+              "reference/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "MCP",
+        "icon": "plug",
+        "groups": [
+          {
+            "group": "Connect",
+            "pages": [
+              "mcp/overview",
+              "mcp/local-server",
+              "mcp/remote-server",
+              "mcp/agent-tokens"
+            ]
+          },
+          {
+            "group": "Tool reference",
+            "pages": [
+              "mcp/local-tools",
+              "mcp/remote-tools",
+              "reference/package-v2",
+              "reference/troubleshooting"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Bowerbirds app",
+          "href": "https://bowerbirds.app",
+          "icon": "bird"
+        },
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/filetelierb/bowerbirds",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Bowerbirds app",
+        "href": "https://bowerbirds.app"
+      },
+      {
+        "label": "GitHub",
+        "href": "https://github.com/filetelierb/bowerbirds"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Quickstart",
+      "href": "/quickstart"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/filetelierb/bowerbirds"
+    }
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude"]
+  }
+}

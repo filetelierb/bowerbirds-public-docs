@@ -1,0 +1,58 @@
+---
+title: "Capture to context"
+description: "Follow one artifact from capture to durable context and downstream use."
+icon: "arrow-right-arrow-left"
+---
+
+This is the common storage and routing spine behind screenshots, notes, recordings, and imported files. Individual capture surfaces branch where their consent or processing rules differ.
+
+<Steps>
+  <Step title="Capture or import">
+    A person captures through an app surface, a script invokes the CLI, an agent imports a local path, or a website visitor submits through Web Capture.
+  </Step>
+  <Step title="Write the source">
+    Bowerbirds creates a record and writes its original payloads. Metadata includes the kind, source, author where known, title, content, tags, and timestamps.
+  </Step>
+  <Step title="Choose the location">
+    The record lands in private Unsorted, a selected Bucket/directory, a shared Triage shelf, or a Web Capture intake. This step does not require AI.
+  </Step>
+  <Step title="Process explicitly">
+    Optional work may transcribe audio, polish a note, classify a Triage record, analyze a recording, or run a cloud Flow. Derived output is written separately or as new payloads.
+  </Step>
+  <Step title="Route and synchronize">
+    A person or policy files the record to an allowed destination. Shared cloud locations synchronize through the durable upload path; local-only or Unsorted records do not.
+  </Step>
+  <Step title="Consume or compose">
+    Apps, CLI, or MCP clients search records, fetch selected payloads, add findings, create Packages, or export a portable folder.
+  </Step>
+</Steps>
+
+## Stable invariants
+
+- Raw evidence remains available when optional processing fails.
+- Normal listings, exports, and MCP cannot enumerate Unsorted. A local CLI caller that already knows a capture ID can use the capture update or duplicate workflow against it.
+- Payload bytes are fetched deliberately rather than included in every listing.
+- Source records are referenced, not rewritten, by Packages.
+- Mutable Scratchpads use revisions. Current live Dictation delivers successful text without filing a record; older or explicitly filed Dictation records remain immutable.
+- Normal deletion is recoverable.
+
+## A programmatic example
+
+```sh
+# Create the destination
+bowerbirds bucket create "Checkout investigation" --json
+
+# Import raw evidence without base64
+bowerbirds import checkout-investigation /tmp/checkout.png \
+  --title "Address validation failure" \
+  --tags checkout,regression \
+  --json
+
+# Discover the returned record's payloads
+bowerbirds item files checkout-investigation <item-id> --json
+
+# Export the whole Bucket for a handoff
+bowerbirds bucket fetch checkout-investigation --out ./handoff
+```
+
+The equivalent agent workflow uses `create_bucket`, `import_local_file`, `list_item_files`, and `export_bucket`.

@@ -1,0 +1,110 @@
+---
+title: "Cloud CLI workflows"
+description: "Authenticate, synchronize, share, search, process, and route cloud context."
+icon: "cloud"
+---
+
+## Sign in
+
+```sh
+bowerbirds cloud login
+bowerbirds cloud whoami
+```
+
+Login asks for an email, sends a magic link, and waits on a temporary localhost callback. The session is shared with cloud commands on that device.
+
+Use `bowerbirds cloud logout` to remove it.
+
+Set `BOWERBIRDS_CLOUD_URL` before the command to target a development endpoint. Although older CLI usage text mentions `cloud login --url`, that option is not currently applied by the login implementation.
+
+## Workspaces
+
+```sh
+bowerbirds cloud orgs list
+bowerbirds cloud orgs create "Acme Research"
+bowerbirds cloud orgs use acme-research
+bowerbirds cloud orgs members acme-research
+```
+
+Add `--org <id-or-slug>` to a cloud command to target a workspace without changing the device's active workspace.
+
+## Push, pull, and sync
+
+```sh
+bowerbirds cloud push launch-research
+bowerbirds cloud pull me/launch-research --as launch-research-copy
+bowerbirds cloud sync launch-research on
+```
+
+- `push` sends a local Bucket to a cloud owner/slug.
+- `pull` materializes a cloud Bucket locally under a chosen name.
+- `sync on` enables continued synchronization for the local Bucket.
+
+## Read cloud records
+
+```sh
+bowerbirds cloud records list <location-cloud-slug> --json
+bowerbirds cloud records search "address validation" \
+  --bucket <bucket-cloud-slug> \
+  --kind capture \
+  --limit 20 \
+  --json
+bowerbirds cloud records show <bucket-cloud-slug> <item-id> --json
+```
+
+For capture-focused exports, use `cloud captures <owner>/<slug>` to sweep manifests and `cloud capture <owner>/<slug>/<item-id>` to write one manifest and its payloads to disk.
+
+## Process a recording
+
+```sh
+bowerbirds cloud recording process research <item-id> \
+  --template walkthroughGuide \
+  --frames 4.2,17.0,38.5 \
+  --follow
+```
+
+With `--json`, follow mode emits newline-delimited progress events. See [Recording processing](/workflows/video-processing) for the output model.
+
+Payload downloads use a cache directory and an optional version stamp:
+
+```sh
+bowerbirds cloud records payload <bucket-cloud-slug> <item-id> annotated.png \
+  --cache-dir ./cache
+```
+
+## Share with people
+
+```sh
+bowerbirds cloud share launch-research teammate@example.com \
+  --role contribute
+bowerbirds cloud share launch-research --members
+bowerbirds cloud share launch-research --revoke <uid>
+```
+
+Human Bucket roles are `read`, `contribute`, and `admin`.
+
+## Run a Flow
+
+Flows pair a goal with a bounded record scope and an allowlist of outcomes.
+
+```sh
+bowerbirds cloud flows list
+bowerbirds cloud flows create --file flow.json
+bowerbirds cloud flows run <flow-id> --follow
+bowerbirds cloud flows apply <run-item-id> --strike op-3
+```
+
+A planning run writes proposals; it does not apply them. Applying a reviewed plan is a separate command. `--strike` omits selected operation IDs.
+
+## Answer an RFI
+
+```sh
+bowerbirds cloud rfis list --state open
+bowerbirds cloud rfis answer <rfi-id> "Use the production workspace"
+```
+
+Processing resumes after the answer is filed.
+
+<Note>
+  Cloud commands include additional surfaces for Forms, Web Capture, record annotation, Packages, deleted Buckets, structure editing, usage, and upload retry. See the [CLI command reference](/reference/cli-commands).
+</Note>

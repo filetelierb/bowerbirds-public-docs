@@ -1,0 +1,69 @@
+---
+title: "Agent tokens"
+description: "Mint, inspect, and revoke the bucket-scoped credentials used by remote MCP."
+icon: "key"
+---
+
+Remote MCP accepts a `bbt_` agent token, not a Bowerbirds user session or a Web Capture `bbk_` key. Each token permanently names one Bucket, one label, and one role until it is revoked.
+
+## Current provisioning status
+
+The cloud implements the token lifecycle as authenticated REST endpoints, but the current apps and CLI do not yet expose it. A Bucket administrator must call the API from an integration that already has a Firebase ID token. The `bowerbirds` CLI stores and refreshes its session internally; it does not print that ID token.
+
+<Warning>
+  If you only have the installed app or CLI, there is currently no complete self-service path to mint a `bbt_` token. Ask the Bucket administrator or backend operator to provision one. `bowerbirds cloud share` grants access to a person by email and does not create an agent token.
+</Warning>
+
+## Mint a token
+
+```http
+POST /buckets/{owner}/{slug}/tokens
+Authorization: Bearer {firebase-id-token}
+Content-Type: application/json
+
+{
+  "role": "contribute",
+  "label": "release-notes-agent"
+}
+```
+
+```json
+{
+  "token": "bbt_...",
+  "id": "4d8b2d4c0c3f109a",
+  "role": "contribute",
+  "label": "release-notes-agent"
+}
+```
+
+The caller must administer the Bucket. The cleartext token is returned once; only its SHA-256 hash is retained by the service.
+
+Choose `read` when the agent only inspects context. Choose `contribute` when it also calls `add_finding`. The four remote MCP tools gain no capability from `admin`, while the credential can pass other Bucket-admin REST checks, so avoid `admin` for MCP clients.
+
+## List grants
+
+```http
+GET /buckets/{owner}/{slug}/tokens
+Authorization: Bearer {firebase-id-token}
+```
+
+The response lists token IDs, labels, roles, and revocation state, never cleartext secrets.
+
+## Revoke a token
+
+```http
+DELETE /buckets/{owner}/{slug}/tokens/{id}
+Authorization: Bearer {firebase-id-token}
+```
+
+Revocation is checked on the next request. Tokens currently have no automatic expiration, so make revocation part of integration offboarding and rotate immediately after suspected disclosure.
+
+## Store the secret
+
+Keep the token in an environment variable or the MCP client's secret store:
+
+```sh
+export BOWERBIRDS_AGENT_TOKEN='bbt_...'
+```
+
+Do not commit it to a shared MCP configuration or place it in a Web Capture snippet.

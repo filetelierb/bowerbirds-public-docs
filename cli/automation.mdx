@@ -1,0 +1,52 @@
+---
+title: "Automate with the CLI"
+description: "Use JSON receipts, stable IDs, safe imports, and revision checks in scripts."
+icon: "gears"
+---
+
+## Prefer JSON and retain receipts
+
+```sh
+bucket_json=$(bowerbirds bucket create "Build evidence" --json)
+bucket_slug=$(printf '%s' "$bucket_json" | jq -r '.slug')
+
+item_json=$(bowerbirds import "$bucket_slug" ./test-results/screenshot.png \
+  --title "Failed visual assertion" \
+  --json)
+item_id=$(printf '%s' "$item_json" | jq -r '.id')
+```
+
+Field envelopes differ by command, and a few counts are encoded as strings. Inspect one real receipt before freezing a script around it.
+
+`cloud login --json` is interactive rather than clean JSON. Commands run with `--follow --json` produce newline-delimited event objects rather than one JSON document.
+
+## Use local paths for binary handoff
+
+Avoid base64 in shell arguments. `bowerbirds import` copies a readable path into the managed store; `item fetch`, `capture export`, and `bucket fetch` write selected data back to disk.
+
+## Make retries safe
+
+- Check whether a Bucket or record already exists before creating it again.
+- Treat output paths as write-once. Item and Bucket fetches refuse existing destinations, while capture export can overwrite files inside its destination; use a fresh directory for capture bundles.
+- Read a Scratchpad immediately before passing `--revision`.
+- Treat a failed Package validation as an incomplete result even if the draft was saved.
+- Keep the returned item ID and payload name together.
+
+## Isolate tests
+
+Development and smoke tests can point Bowerbirds at a disposable store with `BOWERBIRDS_STORE_ROOT`:
+
+```sh
+store_root=$(mktemp -d)
+BOWERBIRDS_STORE_ROOT="$store_root" .build/debug/bowerbirds buckets --json
+```
+
+Do not aim tests at the user's normal application-support store.
+
+## Check the executable first
+
+```sh
+bowerbirds server info --json
+```
+
+The receipt identifies the executable path, Bowerbirds version, store path, supported Package schemas, store schema, and capabilities. This is the fastest way to detect an old binary or a script pointed at the wrong store.

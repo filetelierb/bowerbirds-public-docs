@@ -1,0 +1,42 @@
+---
+title: "Security and privacy"
+description: "The consent, scope, and credential boundaries behind each Bowerbirds door."
+icon: "shield-halved"
+---
+
+Bowerbirds uses separate principals for people, agents, and public capture widgets. Their powers are intentionally not interchangeable.
+
+## Boundaries that always apply
+
+- **Unsorted stays device-private.** Neither local nor remote MCP can enumerate it.
+- **Capture is app-owned.** A headless client cannot silently inherit macOS screen or microphone permission.
+- **Agent writes are attributed.** Local MCP writes are stamped as MCP/agent activity; remote findings are stamped with the token label.
+- **Deletion is soft by default.** Normal remove and trash operations remain recoverable.
+- **Original evidence stays separate.** Annotation and Package generation preserve source records and original payloads.
+- **Capture provenance is opt-in per device.** Disabling it does not remove older local provenance, but prevents that payload from being uploaded or included in model context.
+
+## Cloud credentials
+
+| Credential | Prefix | Scope | Read | Write |
+| --- | --- | --- | :---: | :---: |
+| User session | — | Account and active workspace | By role | By role |
+| Agent token | `bbt_` | One Bucket and one role | Yes | `contribute` or `admin` |
+| Publishable Web Capture key | `bbk_` | One intake capability | No | New visitor captures only |
+
+An agent token cannot switch workspaces or Buckets with a request header. The target Bucket and role are stored in the grant itself. Revocation is checked on the next request. Agent tokens currently have no automatic expiry, so revoke one when its integration is retired.
+
+Use the least-privileged token. An `admin` agent token is not needed for any of the four remote MCP tools and can also pass Bucket-admin REST gates, including agent-token management. Prefer `read` or `contribute` for remote MCP.
+
+<Warning>
+  Treat `bbt_` values as secrets. Do not commit them to an MCP config. Web Capture `bbk_` keys are different: they are publishable by design and still cannot read data.
+</Warning>
+
+## Human-assisted capture
+
+The local MCP tool `request_capture_authorization` creates a visible, expiring request. Approval grants one capture, not ongoing screen access. Bowerbirds hides its Library, captures the prepared target, and opens the normal annotation editor. Denial or expiry captures nothing.
+
+## Payload delivery
+
+Local MCP protects model context with an 8 MB payload cap. Use `import_local_file` for large incoming files and the CLI for large outgoing files.
+
+Remote MCP does not inline payload bytes. Capture manifests return authenticated HTTPS URLs; the client must fetch a selected payload with the same bearer token.

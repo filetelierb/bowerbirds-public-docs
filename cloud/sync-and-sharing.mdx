@@ -1,0 +1,66 @@
+---
+title: "Sync and sharing"
+description: "Move selected Buckets between local stores and a cloud workspace."
+icon: "cloud-arrow-up"
+---
+
+Cloud sync is per-Bucket and opt-in. Private Unsorted, Trash, cloud-origin records, and provenance payloads disabled for sync are excluded from normal local push.
+
+## Sign in and select a workspace
+
+```sh
+bowerbirds cloud login
+bowerbirds cloud whoami
+bowerbirds cloud orgs list
+bowerbirds cloud orgs use <workspace-id-or-slug>
+```
+
+The CLI uses a magic link and a one-shot localhost callback. Session refresh credentials are stored in the system Keychain; cloud requests send a short-lived Firebase ID token.
+
+## Push and pull
+
+```sh
+# Incrementally push a local Bucket
+bowerbirds cloud push research
+
+# Pull a cloud Bucket into a new local name
+bowerbirds cloud pull me/research --as research-copy
+
+# Enable ongoing sync for the local Bucket
+bowerbirds cloud sync research on
+```
+
+Push is incremental and idempotent. Pull is additive: records with cloud IDs already present locally are skipped.
+
+<Warning>
+  Local deletion is not currently bidirectional tombstone sync. Trashing a local record does not retract a cloud copy that was pushed earlier. Use cloud record/Bucket deletion commands for the cloud object.
+</Warning>
+
+## Share a Bucket
+
+```sh
+bowerbirds cloud share research colleague@example.com --role read
+bowerbirds cloud share research editor@example.com --role contribute
+bowerbirds cloud share research --members
+```
+
+If the email does not yet belong to an account, the grant waits and is claimed after sign-up.
+
+## Roles
+
+| Role | Read content | Add/edit records | Manage sharing |
+| --- | :---: | :---: | :---: |
+| `read` | ✓ | — | — |
+| `contribute` | ✓ | ✓ | — |
+| `admin` | ✓ | ✓ | ✓ |
+| owner | ✓ | ✓ | ✓, plus Bucket ownership operations |
+
+Workspace membership places a minimum role on workspace-owned Buckets: owners map to owner, workspace admins to Bucket admin, and members to contribute. A per-Bucket grant can raise this floor, not lower it.
+
+## Free cloud limits
+
+The current server permits cloud push and pull on every tier. The free plan includes 1 GB of storage, retains content for 15 days, and allows 100 new records per month rather than applying a blanket “Pro required” gate. Client copy in some builds may still describe the older gate.
+
+<Note>
+  Add `--org <id-or-slug>` to cloud commands when automation must target a workspace without changing the device's active selection.
+</Note>

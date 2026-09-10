@@ -1,0 +1,90 @@
+---
+title: "Local CLI workflows"
+description: "Manage local Buckets, records, payloads, Scratchpads, captures, and Packages."
+icon: "hard-drive"
+---
+
+## Organize context
+
+```sh
+bowerbirds bucket create "Launch research" -d "Evidence for launch decisions"
+bowerbirds directory create launch-research "Interviews"
+bowerbirds directory create launch-research--interviews "September"
+bowerbirds directory list launch-research --json
+```
+
+Directories can move only within their owning Bucket.
+
+## Add text or files
+
+```sh
+bowerbirds add text launch-research "Customers want CSV export." \
+  --title "Interview finding" \
+  --tags customer,export
+
+bowerbirds import launch-research /tmp/session.mov \
+  --title "Checkout walkthrough" \
+  --json
+```
+
+`import` is the preferred path for browser screenshots, test artifacts, screen recordings, and other large files. Bowerbirds copies the file into its managed store.
+
+Default inference:
+
+- image MIME types become `capture` records;
+- video MIME types become `recording` records;
+- other MIME types become `file` records.
+
+Override with `--type capture|recording|file|note` when needed.
+
+## Read payloads
+
+```sh
+bowerbirds item show launch-research <item-id> --json
+bowerbirds item files launch-research <item-id> --json
+bowerbirds item fetch launch-research <item-id> annotated.png \
+  --out ./annotated.png
+```
+
+The fetch command refuses to overwrite an existing path.
+
+## Work with captures
+
+```sh
+bowerbirds capture list --bucket launch-research --limit 20
+bowerbirds capture export <item-id> --out ./capture-bundle
+```
+
+Capture export writes `manifest.json` and every payload to disk so an external tool can inspect the original, annotation, and session without carrying binary data in model context.
+
+## Use revisioned Scratchpads
+
+```sh
+bowerbirds scratchpad create launch-research "Launch brief" \
+  --content "# Draft"
+bowerbirds scratchpad show launch-research <item-id> --json
+bowerbirds scratchpad append launch-research <item-id> \
+  --revision 1 \
+  --content "\n\n## Evidence\nCustomers want CSV export."
+```
+
+Read before writing and pass the current revision.
+
+## Remove and restore
+
+```sh
+bowerbirds item remove launch-research <item-id>
+bowerbirds trash list --json
+bowerbirds trash restore <item-id>
+```
+
+`trash empty` is the irreversible operation. Normal remove is a soft delete.
+
+## Export a portable Bucket
+
+```sh
+bowerbirds bucket export launch-research --md launch-research.md
+bowerbirds bucket fetch launch-research --out ./launch-research
+```
+
+The folder export includes Bucket metadata, Markdown, and per-record payload directories.

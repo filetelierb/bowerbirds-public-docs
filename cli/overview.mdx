@@ -1,0 +1,71 @@
+---
+title: "CLI overview"
+description: "Install and use the bowerbirds command for local and cloud context."
+icon: "terminal"
+---
+
+The `bowerbirds` CLI shares the app's local store and also provides explicit authenticated cloud commands.
+
+## Get the executable
+
+<Tabs>
+  <Tab title="Development build">
+    ```sh
+    git clone https://github.com/filetelierb/bowerbirds.git
+    cd bowerbirds
+    swift build --product bowerbirds
+    .build/debug/bowerbirds server info
+    ```
+  </Tab>
+  <Tab title="App bundle">
+    A packaged app places the current CLI in `Contents/Helpers/bowerbirds`.
+
+    ```sh
+    '/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds' server info
+    ```
+
+    Add a symlink or shell alias if you want to invoke it as `bowerbirds` from anywhere.
+  </Tab>
+</Tabs>
+
+<Note>
+  `trove` remains a compatibility executable and may appear in older shell history or MCP registrations. Prefer `bowerbirds` for new automation.
+</Note>
+
+## Local versus cloud
+
+```sh
+# Local SQLite and payload store
+bowerbirds buckets --json
+bowerbirds bucket show research --json
+
+# Authenticated Bowerbirds Cloud
+bowerbirds cloud login
+bowerbirds cloud whoami
+bowerbirds cloud buckets list
+```
+
+`BOWERBIRDS_CLOUD_URL` overrides the default cloud endpoint for development or self-hosted testing.
+
+## Machine-readable output
+
+Add `--json` to supported commands. JSON mode is the recommended contract for scripts; human output is intentionally optimized for the terminal and may include guidance text.
+
+```sh
+bowerbirds item show research 01J... --json | jq '.item.title'
+```
+
+## JSON and exit caveats
+
+JSON support is broad, not universal. `bucket export`, the `--cloud` aliases, several account/admin commands, and `cloud share` remain human text. `cloud login --json` prints interactive prose before its final receipt, and `--follow --json` emits newline-delimited events.
+
+Most runtime failures are written to standard error with a non-zero exit code. Some incomplete local command forms still print the usage block and exit successfully, so automation should validate required arguments before invocation.
+
+<CardGroup cols={2}>
+  <Card title="Local workflows" icon="hard-drive" href="/cli/local-workflows">
+    Buckets, directories, records, payloads, Scratchpads, captures, and Packages.
+  </Card>
+  <Card title="Cloud workflows" icon="cloud" href="/cli/cloud-workflows">
+    Sign in, sync, share, search, run flows, and handle RFIs.
+  </Card>
+</CardGroup>

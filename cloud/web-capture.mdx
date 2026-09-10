@@ -1,0 +1,53 @@
+---
+title: "Web Capture"
+description: "Collect annotated website reports through a write-only publishable key."
+icon: "browser"
+---
+
+Web Capture lets a visitor file context from a website without a Bowerbirds account. Each widget installation has its own intake Bucket and a publishable key beginning with `bbk_`.
+
+## Capability boundary
+
+A publishable key may:
+
+- read the widget's non-sensitive runtime configuration;
+- create a new visitor record;
+- upload payloads to that record.
+
+It cannot list, read, search, edit, share, or download Bucket contents. It is not a user session or agent role.
+
+## Manage installations
+
+Use the higher-level `web-captures` commands:
+
+```sh
+bowerbirds cloud web-captures list
+bowerbirds cloud web-captures mint --file draft.json
+bowerbirds cloud web-captures origins <id> --file origins.json
+bowerbirds cloud web-captures set-disabled <id> --value false
+bowerbirds cloud web-captures set-recording <id> --value true
+bowerbirds cloud web-captures reveal <id>
+bowerbirds cloud web-captures rotate <id>
+```
+
+The app provides the same management surface, including the script tag to install and Content Security Policy guidance.
+
+## Origins and CORS
+
+Each key carries its own allowed-origin list. Browser requests are checked against that list; there is no global origin allowlist that makes one widget valid on every site.
+
+Wildcard subdomains can be configured deliberately. Keep the allowlist as narrow as the deployment permits.
+
+## Visitor attribution
+
+The service generates record IDs so one visitor cannot choose an ID that overwrites another visitor's capture. Visitor writes are attributed as web/visitor activity without pretending the system knows the person's identity.
+
+## Optional Triage
+
+An administrator can enable server-side classification for one intake, choose `auto`, `suggest`, or `both`, attach workspace skills, allowlist destinations, and set a fallback.
+
+Because a public page lets a stranger trigger billed classification, an enabled Web Capture intake requires a monthly classification ceiling. Work is queued asynchronously; if the queue is unavailable or full, the capture remains safely stored in the intake but may remain unclassified.
+
+<Warning>
+  A Web Capture intake is a source, not a normal filing destination. Native apps and agent tokens cannot use it as a general-purpose write target.
+</Warning>

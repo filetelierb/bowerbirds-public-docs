@@ -1,0 +1,93 @@
+---
+title: "Package v2"
+description: "Schema and example for portable collections and visual scenes."
+icon: "brackets-curly"
+---
+
+Package v2 is the current generic Package schema. Dates use ISO 8601 and coordinates are normalized to the source image.
+
+```json
+{
+  "schemaVersion": 2,
+  "id": "checkout-guide",
+  "title": "Reproduce the checkout error",
+  "summary": "A two-step visual guide with the evidence attached.",
+  "entries": [
+    {
+      "id": "entry-error",
+      "kind": "payload",
+      "itemID": "01JERRORCAPTURE",
+      "payloadName": "annotated.png",
+      "title": "Checkout validation error",
+      "note": "Original evidence"
+    }
+  ],
+  "scenes": [
+    {
+      "id": "scene-submit",
+      "source": {
+        "kind": "capture",
+        "itemID": "01JERRORCAPTURE",
+        "payloadName": "annotated.png"
+      },
+      "title": "Submit the address form",
+      "message": "The country value disappears after validation.",
+      "voiceover": "Submit once and watch the country field.",
+      "annotations": [
+        {
+          "id": "focus-country",
+          "kind": "spotlight",
+          "rect": {
+            "x": 0.54,
+            "y": 0.35,
+            "width": 0.32,
+            "height": 0.09
+          },
+          "points": [],
+          "text": "Country"
+        }
+      ]
+    }
+  ],
+  "provenance": "mcp",
+  "metadata": {
+    "workflow": "bug-reproduction"
+  },
+  "createdAt": "2026-09-10T10:00:00Z",
+  "updatedAt": "2026-09-10T10:00:00Z"
+}
+```
+
+## Entries
+
+`kind` is one of `record`, `payload`, `scratchpad`, or `file`. Use `itemID` to reference the filed record and `payloadName` when the entry targets one attachment.
+
+## Scene sources
+
+`source.kind` is one of `capture`, `videoFrame`, `image`, or `generated`. Every source includes `itemID` and `payloadName`. A video-derived scene can also carry:
+
+```json
+{ "timeRange": { "start": 12.4, "end": 18.9 } }
+```
+
+## Annotations
+
+| Kind | Geometry |
+| --- | --- |
+| `highlight` | `rect` |
+| `spotlight` | `rect`, optional visible `text` |
+| `arrow` | `from`, `to` |
+| `comment` | `rect` or point-style data plus `text` |
+| `drawing` | `points` |
+| `redaction` | `rect` |
+| `mosaic` | `rect` or drawing points |
+
+All `x`, `y`, `width`, and `height` values remain between `0` and `1`. Rectangle width/height may not extend past the image edge.
+
+## Validate before and after saving
+
+Call `validate_package` with the proposed `packageJSON`, then `upsert_package`, then `get_package`. A draft with unresolved references may be saved with `valid: false`; do not report it as complete.
+
+<Note>
+  Legacy `tutorial.json` documents can be decoded and migrated, but new integrations should write `package.json` with `schemaVersion: 2`.
+</Note>

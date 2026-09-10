@@ -1,0 +1,97 @@
+---
+title: "Local MCP tools"
+description: "Reference for the tools advertised by the local stdio server."
+icon: "toolbox"
+---
+
+The current local server advertises 37 tools. Inputs marked **required** must be supplied.
+
+<Info>
+  Every tool call requires the Bowerbirds Keychain session created by `bowerbirds cloud login`. The actual Bucket and payload operations on this page still use the local store unless a tool explicitly says otherwise.
+</Info>
+
+## Server, locations, and records
+
+| Tool | Required inputs | Purpose |
+| --- | --- | --- |
+| `get_server_info` | — | Report executable, versions, store, schemas, and capabilities |
+| `list_buckets` | — | List filed root Buckets; excludes Unsorted |
+| `list_directories` | `bucketSlug` | List paths inside one Bucket |
+| `get_bucket` | `slug` | Get a Bucket and its records |
+| `get_directory` | `slug` | Get one directory and directly filed records |
+| `create_bucket` | `name` | Create a global Bucket; accepts `description` |
+| `create_directory` | `parentSlug`, `name` | Create below a Bucket/directory; accepts `description` |
+| `move_directory` | `slug`, `parentSlug` | Move inside the same owning Bucket |
+| `get_item` | `slug`, `itemId` | Read one record |
+| `search_items` | `query` | Search filed records; optional `slug` narrows scope |
+| `remove_item` | `slug`, `itemId` | Move a record to recoverable Trash |
+| `export_bucket` | `slug` | Return a Bucket as Markdown |
+
+## Payloads and captures
+
+| Tool | Required inputs | Purpose |
+| --- | --- | --- |
+| `list_item_files` | `slug`, `itemId` | List attached payloads before fetching |
+| `get_item_payload` | `slug`, `itemId`, `name` | Return image, text/JSON, or base64 up to 8 MB |
+| `capture_export` | `item_id` | Write `manifest.json` and payloads to `out_dir` or a default directory |
+| `capture_read` | `item_id` | Return manifest plus at most three native image blocks |
+| `captures_list` | — | List recent filed captures; optional `bucket`, `limit` |
+| `add_item` | `slug`, `title`, `content` | Write attributed text context; accepts type/tags |
+| `add_file_item` | `slug`, `title`, `fileName`, `dataBase64` | Decode and file up to 8 MB |
+| `import_local_file` | `slug`, `path` | Copy a local image/video/file without base64 |
+| `add_image_item` | `slug`, `title`, `imageBase64` | File PNG/JPEG and return dimensions/checksum |
+
+Prefer `import_local_file` when another tool already produced a path.
+
+## Scratchpads
+
+| Tool | Required inputs | Purpose |
+| --- | --- | --- |
+| `create_scratchpad` | `slug`, `title` | Create a revisioned document |
+| `get_scratchpad` | `slug`, `itemId` | Read content and revision history |
+| `update_scratchpad` | `slug`, `itemId`, `expectedRevision`, `content` | Replace or append with concurrency protection |
+| `scratchpad_from_dictation` | `slug`, `itemId` | Create mutable copy linked to immutable Dictation |
+
+`update_scratchpad.operation` is `replace` or `append`. Refresh after a revision conflict.
+
+## Packages and processing
+
+| Tool | Required inputs | Purpose |
+| --- | --- | --- |
+| `list_packages` | `slug` | List Package records and documents |
+| `get_package` | `slug`, `itemId` | Read a Package before editing |
+| `validate_package` | `slug` | Validate `itemId` or proposed `packageJSON` without writing |
+| `upsert_package` | `slug`, `packageJSON` | Create or replace Package; optional `itemId` updates |
+| `enqueue_video_processing` | `slug`, `recordingItemId` | Queue a sidecar/cloud processing job |
+| `poll_video_processing` | — | Read, list, or atomically claim jobs |
+| `update_video_processing` | `jobId`, `state` | Renew, progress, succeed, fail, or cancel a claimed job |
+
+These three video-processing tools are the low-level local durable-job contract for worker integrations. The native apps' current Recording workflow uses recording templates and cloud recording jobs; see [Recording processing](/workflows/video-processing).
+
+## Human loop
+
+| Tool | Required inputs | Purpose |
+| --- | --- | --- |
+| `notify_user` | `title`, `message` | Queue a durable local notification |
+| `request_input` | `slug`, `title`, `fields` | Create a structured human request |
+| `request_capture_authorization` | `slug`, `target` | Request one visible, time-limited capture |
+| `await_response` | `slug`, `rfiId` | Wait for answer, decline, expiry, or timeout |
+| `cancel_request` | `slug`, `rfiId` | Cancel a pending request |
+
+<Note>
+  Legacy tutorial handlers remain callable for compatibility but are not advertised. New clients should use Package v2.
+</Note>
+
+## Operational limits
+
+| Operation | Current behavior |
+| --- | --- |
+| General MCP payload ingress/egress | 8 MB |
+| `capture_read` | One to three images; oversized image blocks are progressively reduced or omitted |
+| `captures_list` | Defaults to 20; no server-side maximum |
+| Claimed video-job lease | Defaults to 300 seconds |
+| `request_input` expiry | Defaults to 24 hours |
+| `request_capture_authorization` expiry | Defaults to 15 minutes |
+| `await_response` call timeout | Defaults to 30 seconds and polls once per second |
+
+`capture_export` writes every payload through the filesystem and is not constrained by the 8 MB MCP response ceiling. With no `out_dir`, it first tries `./<item-id>/` and falls back to a temporary directory only if that default cannot be created. An explicitly supplied invalid directory does not fall back, and existing files in the destination may be replaced.

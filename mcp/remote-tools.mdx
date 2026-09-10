@@ -1,0 +1,68 @@
+---
+title: "Remote MCP tools"
+description: "The four tools exposed by the bucket-scoped cloud MCP door."
+icon: "cloud-arrow-up"
+---
+
+The remote surface is intentionally small. It lets an agent survey one shared Bucket, inspect capture manifests, fetch payloads separately, and file a text finding.
+
+## `list_items`
+
+List non-trashed records in the token's Bucket.
+
+```json
+{}
+```
+
+Returns each record's ID, kind, title, content, and optional fingerprint. It does not include payload bytes.
+
+## `list_captures`
+
+List recent captures newest first.
+
+```json
+{
+  "limit": 20,
+  "since": "2026-09-01T00:00:00Z"
+}
+```
+
+Optional `owner` and `slug` can confirm the intended Bucket but cannot select a different one. `since` must be RFC 3339. The list defaults to 50 captures, caps requests at 200, and tells you when results were truncated.
+
+Each entry includes capture content, parsed numbered comments, and a payload manifest.
+
+## `get_capture`
+
+Read one capture manifest.
+
+```json
+{
+  "item_id": "01J..."
+}
+```
+
+The result includes the capture's content, comments, and payload metadata. Fetch a payload's `url` over HTTPS with the same bearer token.
+
+## `add_finding`
+
+File a text note into the Bucket root.
+
+```json
+{
+  "title": "Checkout regression",
+  "content": "The address form loses its country value after validation."
+}
+```
+
+Requires a `contribute` or `admin` token. The server stamps:
+
+- `kind: "note"`;
+- `source: "mcp"`;
+- the token label as author;
+- server timestamps and listing keys.
+
+The write can be refused if the Bucket is publishable-key-only, the workspace storage allowance is full, or the monthly record allowance is exhausted. Reading remains available when a write ceiling is reached.
+
+<Warning>
+  Remote MCP cannot upload binary findings, edit Scratchpads, create Packages, run flows, or request a local capture. Use local MCP or the authenticated CLI for those workflows.
+</Warning>

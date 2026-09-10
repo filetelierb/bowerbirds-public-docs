@@ -1,0 +1,42 @@
+---
+title: "MCP overview"
+description: "Choose the local or remote Bowerbirds MCP server for your agent."
+icon: "plug"
+---
+
+Bowerbirds exposes two MCP servers with deliberately different scopes.
+
+| | Local MCP | Remote MCP |
+| --- | --- | --- |
+| Transport | stdio | HTTP JSON-RPC |
+| Command/URL | `bowerbirds mcp` | `https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp` |
+| Authentication | Signed-in Bowerbirds Keychain session | `Bearer bbt_...` |
+| Scope | All filed Buckets in one local store | One cloud Bucket |
+| Payloads | Native image/text/base64 up to 8 MB | Authenticated payload URLs |
+| Writes | Rich records, files, Packages, RFIs | Text findings with contribute/admin |
+| Private Unsorted | Never | Never |
+
+<CardGroup cols={2}>
+  <Card title="Connect locally" icon="laptop" href="/mcp/local-server">
+    Best when the agent runs on the same Mac and needs rich read/write workflows.
+  </Card>
+  <Card title="Connect remotely" icon="cloud" href="/mcp/remote-server">
+    Best when an external agent should see exactly one shared Bucket.
+  </Card>
+</CardGroup>
+
+## Sign in, then start with server info
+
+Run `bowerbirds cloud login` once before using local MCP tools. Then call `get_server_info`. It reports the exact executable path, build version, local store, schema versions, and capability names. This makes a stale MCP registration visible.
+
+The server can list/read MCP resources while signed out, but `tools/call` requires the shared session—including `get_server_info` and `list_buckets`.
+
+## Attribution
+
+- Local MCP writes are stamped with `source: "mcp"` and an agent label that includes the signed-in account when available.
+- Remote MCP findings are stamped with the token's agent label.
+- Web Capture is not MCP; it uses a separate write-only visitor capability.
+
+## What MCP cannot do
+
+The current local server cannot observe or control the live Bowerbirds UI. It cannot silently capture the screen or microphone. It can create a visible one-time capture request and wait for the person's decision.

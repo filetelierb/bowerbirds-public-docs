@@ -1,0 +1,87 @@
+---
+title: "Quickstart"
+description: "Create a Bucket, add context, and let an agent read it."
+icon: "rocket"
+---
+
+This walkthrough uses a local development build. The same `bowerbirds` executable is included with a packaged macOS app.
+
+<Steps>
+  <Step title="Build Bowerbirds">
+    Bowerbirds requires macOS 14 or later and Xcode 16 or later.
+
+    ```sh
+    git clone https://github.com/filetelierb/bowerbirds.git
+    cd bowerbirds
+    swift build
+    ```
+  </Step>
+  <Step title="Create a Bucket">
+    ```sh
+    swift run bowerbirds bucket create payments-bug \
+      -d "Checkout investigation"
+    ```
+
+    Bucket names are slugified. Use the returned slug in later commands.
+  </Step>
+  <Step title="Add context">
+    ```sh
+    swift run bowerbirds add text payments-bug \
+      "Checkout fails after address validation." \
+      --title "Observed behavior" \
+      --tags checkout,bug
+
+    swift run bowerbirds import payments-bug \
+      /absolute/path/to/checkout-error.png \
+      --title "Checkout error" \
+      --json
+    ```
+
+    Images imported without an explicit type become `capture` records. Videos become `recording` records.
+  </Step>
+  <Step title="Inspect or export it">
+    ```sh
+    swift run bowerbirds bucket show payments-bug --json
+    swift run bowerbirds bucket fetch payments-bug --out ./payments-bug-export
+    ```
+
+    `bucket fetch` refuses to overwrite an existing destination.
+  </Step>
+  <Step title="Connect an MCP client">
+    Build the app bundle so the executable has a stable path:
+
+    ```sh
+    ./scripts/build-app.sh
+    ```
+
+    Then register the bundled CLI with your client. For Claude Code:
+
+    ```sh
+    claude mcp add bowerbirds -- \
+      "$PWD/.build/Bowerbirds.app/Contents/Helpers/bowerbirds" mcp
+    ```
+
+    Sign in once with `bowerbirds cloud login` before calling tools. Then start an agent workflow with `get_server_info` and `list_buckets`.
+  </Step>
+</Steps>
+
+<Warning>
+  The MCP server does not start the app. Screen capture, microphone access, annotation UI, and interactive AI features remain app-owned capabilities. Tool calls do require the shared Bowerbirds cloud session in Keychain.
+</Warning>
+
+## Next steps
+
+<CardGroup cols={2}>
+  <Card title="CLI workflows" icon="terminal" href="/cli/local-workflows">
+    Import files, manage payloads, and export portable folders.
+  </Card>
+  <Card title="Local MCP setup" icon="plug" href="/mcp/local-server">
+    Connect Codex, Claude Code, or another stdio MCP client.
+  </Card>
+  <Card title="Data model" icon="database" href="/concepts/data-model">
+    Learn Buckets, directories, records, payloads, and Packages.
+  </Card>
+  <Card title="Cloud sync" icon="cloud" href="/cloud/sync-and-sharing">
+    Sign in, push, pull, share, and work across devices.
+  </Card>
+</CardGroup>

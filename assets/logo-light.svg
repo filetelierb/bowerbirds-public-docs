@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="184" height="40" viewBox="0 0 184 40" role="img" aria-label="Bowerbirds">
+  <rect width="40" height="40" rx="11" fill="#103C84"/>
+  <path d="M10 23c5-1 8-4 10-10 2 4 5 6 10 6-2 7-7 11-14 11-3 0-5-2-6-7Z" fill="#F6F8FC"/>
+  <circle cx="25.5" cy="17" r="1.5" fill="#D99D29"/>
+  <text x="50" y="27" font-family="ui-sans-serif,system-ui,-apple-system" font-size="20" font-weight="650" fill="#111827">Bowerbirds</text>
+</svg>

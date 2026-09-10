@@ -1,0 +1,70 @@
+---
+title: "Architecture"
+description: "How the apps, CLI, MCP servers, local store, and cloud fit together."
+icon: "diagram-project"
+---
+
+Bowerbirds has multiple doors over one context model. The door you choose changes where the data lives and which capabilities are available; it does not change what a Bucket or record means.
+
+```mermaid
+flowchart TB
+  subgraph device[Apple devices]
+    MAC[macOS app]
+    IOS[iOS app]
+    CLI[bowerbirds CLI]
+    LMCP[Local MCP · stdio]
+    STORE[(SQLite/WAL metadata\nplain payload files)]
+    MAC --> STORE
+    IOS --> STORE
+    CLI --> STORE
+    LMCP --> STORE
+  end
+
+  subgraph cloud[Bowerbirds Cloud]
+    API[Authenticated API]
+    RMCP[Remote MCP · HTTP]
+    PG[(Postgres metadata)]
+    OBJECTS[(Object storage payloads)]
+    JOBS[Processing jobs and flows]
+    API --> PG
+    API --> OBJECTS
+    RMCP --> PG
+    RMCP --> OBJECTS
+    JOBS --> PG
+  end
+
+  STORE <-->|explicit sync| API
+```
+
+## Local plane
+
+The app, CLI, and local MCP server use `BowerbirdsKit` and the same local store. Metadata is held in SQLite with WAL enabled; payload bytes live as ordinary files beside it.
+
+The processes remain deliberately separate:
+
+- The apps own UI, screen and audio capture, system permissions, Keychain access, global shortcuts, and interactive AI features.
+- Local CLI commands and the local MCP server read and write the store directly. Starting either does not launch the app. MCP tool calls require an existing Bowerbirds cloud sign-in even though their data operations are local.
+- Local MCP is not a network service. It speaks MCP over standard input and output.
+
+## Cloud plane
+
+Cloud is optional. It adds workspace identity, cross-device structure and record sync, sharing, browser capture, server-side processing, and the remote MCP door.
+
+The remote MCP server is intentionally narrower than local MCP. A token grants one role on one Bucket; it cannot browse the rest of a workspace or private device staging.
+
+## Capability matrix
+
+| Capability | App | CLI | Local MCP | Remote MCP |
+| --- | :---: | :---: | :---: | :---: |
+| Read filed local records | ✓ | ✓ | ✓ | — |
+| Read one shared cloud Bucket | ✓ | ✓ | — | ✓ |
+| Capture screen/audio | ✓ | — | Consent request only | — |
+| Import a local path | ✓ | ✓ | ✓ | — |
+| Edit a revisioned Scratchpad | ✓ | ✓ | ✓ | — |
+| File a cloud finding | ✓ | ✓ | — | With contribute/admin token |
+| Access private Unsorted | ✓ | Known-ID capture edit only | — | — |
+| Run cloud flows | ✓ | ✓ | — | — |
+
+<Note>
+  Cloud sync is explicit. Local-first does not mean every local Bucket is silently uploaded.
+</Note>

@@ -1,0 +1,85 @@
+---
+title: "Local MCP server"
+description: "Connect an MCP client to the Bowerbirds store on the same Mac."
+icon: "laptop"
+---
+
+The local server speaks line-delimited JSON-RPC over standard input/output, negotiates MCP protocol version `2025-03-26`, and uses the same SQLite/payload store as the app and CLI. It does not launch Bowerbirds or make model calls.
+
+## Build or locate the CLI
+
+```sh
+# From source
+swift build --product bowerbirds
+realpath .build/debug/bowerbirds
+
+# From an installed app
+realpath '/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds'
+```
+
+Use an absolute path in client configuration so upgrades and shell `PATH` differences are explicit.
+
+## Connect a client
+
+First establish the shared session:
+
+```sh
+/absolute/path/to/bowerbirds cloud login
+```
+
+<Tabs>
+  <Tab title="Codex">
+    ```sh
+    codex mcp add bowerbirds -- \
+      /absolute/path/to/bowerbirds mcp
+    ```
+  </Tab>
+  <Tab title="Claude Code">
+    ```sh
+    claude mcp add bowerbirds -- \
+      /absolute/path/to/bowerbirds mcp
+    ```
+  </Tab>
+  <Tab title="JSON config">
+    ```json
+    {
+      "mcpServers": {
+        "bowerbirds": {
+          "command": "/absolute/path/to/bowerbirds",
+          "args": ["mcp"]
+        }
+      }
+    }
+    ```
+  </Tab>
+</Tabs>
+
+Restart clients that cache their MCP processes after replacing the app or executable.
+
+## Verify the connection
+
+Ask the client to call:
+
+1. `get_server_info`
+2. `list_buckets`
+3. `captures_list` or `search_items`
+
+Compare the server-info executable and store path with the app you expected to use.
+
+## Resources
+
+The server exposes:
+
+- `bowerbirds://<bucket-slug>` for a Bucket;
+- `bowerbirds://<bucket-slug>/<item-id>` for a record;
+- `bowerbirds://docs/package-authoring` for the agent Package workflow.
+
+The root Bucket and Package-guide resources appear in `resources/list`. Individual record URIs are readable without being enumerated. Legacy `trove://` URIs remain accepted.
+
+<Note>
+  The current `resources/read` implementation returns its resource block under `content` rather than the MCP specification's `contents` field. Tool calls are unaffected; resource clients may need this compatibility handling until the server is corrected.
+</Note>
+
+<Warning>
+  A client started from a different user account or with `BOWERBIRDS_STORE_ROOT` set may see a different store. Check `get_server_info` before diagnosing “missing” records.
+</Warning>

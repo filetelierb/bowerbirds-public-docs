@@ -1,0 +1,62 @@
+---
+title: "Scratchpads and revisions"
+description: "Edit working documents safely without changing immutable source records."
+icon: "file-pen"
+---
+
+Scratchpads are the mutable document type in Bowerbirds. Every update creates a revision and uses optimistic concurrency so app and agent edits cannot silently overwrite each other.
+
+## From immutable source to working document
+
+Filed Dictation records remain immutable. To revise one, create a Scratchpad that records the Dictation as its source:
+
+```sh
+bowerbirds scratchpad from-dictation research <dictation-id> \
+  --title "Edited interview notes" \
+  --json
+```
+
+The original transcript and audio remain unchanged.
+
+Current live Dictation normally delivers successful text directly to the active app and creates no record. This conversion workflow applies when a compatible or older workflow has filed a Dictation record.
+
+## Revision protocol
+
+<Steps>
+  <Step title="Read the current document">
+    ```sh
+    bowerbirds scratchpad show research <scratchpad-id> --json
+    ```
+
+    Retain the returned `revision`.
+  </Step>
+  <Step title="Update with the expected revision">
+    ```sh
+    bowerbirds scratchpad update research <scratchpad-id> \
+      --revision 3 \
+      --content "Revised content" \
+      --instruction "Clarify the decision" \
+      --json
+    ```
+  </Step>
+  <Step title="Refresh on conflict">
+    If another writer already created revision 4, your revision-3 write is rejected. Read again, reconcile, then retry with the current revision.
+  </Step>
+</Steps>
+
+## MCP equivalent
+
+Call `get_scratchpad`, then `update_scratchpad` with:
+
+```json
+{
+  "slug": "research",
+  "itemId": "01J...",
+  "expectedRevision": 3,
+  "operation": "append",
+  "content": "\n\n## Follow-up\nConfirm the launch owner.",
+  "instruction": "Append the open question"
+}
+```
+
+`operation` can be `replace` or `append`. The `instruction` becomes part of the revision history.

@@ -1,0 +1,11 @@
+# Internal product source material. These files guide the public docs but must
+# never be processed, indexed, or served by Mintlify.
+vault/
+
+# Documentation-format-framework inputs and reports are not public artifacts.
+dashboard.yaml
+format.yaml
+report.yaml
+
+.DS_Store
+**/.DS_Store

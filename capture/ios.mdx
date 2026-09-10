@@ -1,0 +1,46 @@
+---
+title: "Capture on iOS"
+description: "Capture photos, screens, voice, notes, files, and shared content on iPhone and iPad."
+icon: "mobile-screen"
+---
+
+The iOS app uses the same Bucket, record, payload-role, form, annotation, and routing vocabulary as macOS. Its primary navigation has three tabs: **Buckets**, **Inbox**, and **Settings**.
+
+## Capture menu
+
+Open **Buckets** and tap **+** to choose:
+
+- **Quick Note** for text;
+- **Camera** for a new photo;
+- **Photo Library** for an existing image;
+- **Record** for microphone, device audio, screen, or any supported combination.
+
+Record uses the same source model as macOS. iOS cannot capture calls or FaceTime audio, and individual apps can withhold their device audio. Screen recording is delivered through the system broadcast surface.
+
+The keyboard extension provides typing, Dictation, and a picker for recent records. App Intents expose selected quick actions to Shortcuts and other system surfaces.
+
+## Share extension
+
+The share extension accepts up to ten images in one handoff and can ingest text and images shared from Apple Notes. It stages the content in the App Group, then the main app drains that staging area into the selected location. If that Bucket disappeared before filing, the content falls back to private Unsorted.
+
+## Filing
+
+New captures are first written locally. Depending on the device routing setting, they either stay in private Unsorted or are filed to the shared Triage shelf and queued for background upload. A network failure must not block or discard the capture.
+
+Quick Blink is available later from a filed recording. It compares a selected span locally and creates a Package from the reviewed frames; it is not an item in the capture menu.
+
+## Editing parity
+
+An editable capture retains:
+
+- the original image;
+- the flattened annotated image;
+- the annotation session document;
+- numbered comment text;
+- optional attached Forms and answers.
+
+The session document makes visual marks selectable and re-editable instead of permanently baking every change into pixels.
+
+<Info>
+  iOS and macOS can present the same cloud record because payload meaning is carried by roles, not by platform-specific filenames.
+</Info>

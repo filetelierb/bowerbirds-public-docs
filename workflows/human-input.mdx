@@ -1,0 +1,55 @@
+---
+title: "Human input and consent"
+description: "Ask a person for structured input or a one-time capture during an agent workflow."
+icon: "person-circle-question"
+---
+
+The local MCP server gives agents two explicit ways to pause for a person: a structured request for input and a one-time capture authorization.
+
+## Structured request
+
+`request_input` creates an `rfi` record in a filed Bucket. Fields can use these kinds:
+
+- `select`
+- `text`
+- `slider`
+- `number`
+- `toggle`
+- `date`
+- `rating`
+
+```json
+{
+  "slug": "launch",
+  "title": "Choose the release channel",
+  "message": "The package is ready for one destination.",
+  "expiresIn": 3600,
+  "fields": [
+    {
+      "id": "channel",
+      "kind": "select",
+      "label": "Release channel",
+      "options": ["TestFlight", "Production"]
+    }
+  ]
+}
+```
+
+Call `await_response` with the returned `rfiId`. It returns when the request is answered, declined, expired, cancelled, or the call timeout is reached.
+
+## One-time screen capture
+
+`request_capture_authorization` creates a visible request and local notification. It does not return screen pixels.
+
+On **Approve once**, Bowerbirds:
+
+1. hides its Library;
+2. captures the target the person prepared;
+3. opens the standard annotation editor;
+4. saves only when the person completes the editor.
+
+Pass `packageItemId` to route the approved capture into an existing Package. After `await_response` reports approval, poll `get_package` until the new scene appears because the editor save is still user-controlled.
+
+<Warning>
+  This is not general UI automation. The local MCP server cannot observe the live Bowerbirds window, click controls, scroll, or enter text.
+</Warning>

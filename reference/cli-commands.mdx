@@ -1,0 +1,138 @@
+---
+title: "CLI command reference"
+description: "A grouped reference to the current bowerbirds command surface."
+icon: "rectangle-list"
+---
+
+Add `--json` to supported commands. Arguments in angle brackets are required.
+
+## Server and organization
+
+```text
+bowerbirds server info
+bowerbirds buckets
+bowerbirds bucket create <name> [-d description]
+bowerbirds bucket show <slug>
+bowerbirds bucket rename <slug> <name>
+bowerbirds bucket delete <slug>
+bowerbirds bucket export <slug> [--md file]
+bowerbirds bucket fetch <slug> --out <directory>
+bowerbirds directory list <bucket-slug>
+bowerbirds directory create <parent-slug> <name> [-d description]
+bowerbirds directory move <directory-slug> --parent <parent-slug>
+bowerbirds directory show <directory-slug>
+bowerbirds directory rename <directory-slug> <name>
+bowerbirds directory delete <directory-slug>
+```
+
+## Records, files, and Trash
+
+```text
+bowerbirds item show <slug> <item-id>
+bowerbirds item files <slug> <item-id>
+bowerbirds item fetch <slug> <item-id> <payload-name> --out <path>
+bowerbirds item submit <slug> <path> [options]
+bowerbirds item remove <slug> <item-id>
+bowerbirds import <slug> <path> [options]
+bowerbirds add text <slug> <text> [--title title] [--tags a,b]
+bowerbirds add file <slug> <path> [options]
+bowerbirds image submit <slug> <png-or-jpeg> [options]
+bowerbirds trash list
+bowerbirds trash restore <item-id> [item-id ...]
+bowerbirds trash empty [--older-than-days N]
+```
+
+File options include `--title`, `--content`, `--mime`, `--role`, `--tags`, and where supported `--type capture|recording|file`.
+
+## Scratchpads
+
+```text
+bowerbirds scratchpad list <slug>
+bowerbirds scratchpad create <slug> <title> [--content text]
+bowerbirds scratchpad show <slug> <item-id>
+bowerbirds scratchpad history <slug> <item-id>
+bowerbirds scratchpad improve <item-id> --instruction <text> [--content <draft>]
+bowerbirds scratchpad update <slug> <item-id> --revision <n> --content <text> [options]
+bowerbirds scratchpad append <slug> <item-id> --revision <n> --content <text> [options]
+bowerbirds scratchpad from-dictation <slug> <item-id> [--title title]
+bowerbirds vision follow-up <item-id> --text <question>
+```
+
+## Captures, Packages, and video jobs
+
+```text
+bowerbirds capture list [--bucket slug] [--limit N]
+bowerbirds capture export <item-id> [--out <directory>]
+bowerbirds capture file --image <png> [options]
+bowerbirds capture clipboard --image <png> [options]
+bowerbirds capture update <item-id> --image <png> [options]
+bowerbirds capture duplicate <item-id> --image <png> [options]
+bowerbirds capture annotation-open <item-id> --output-dir <path>
+bowerbirds capture forms-state --slug <local-slug>
+bowerbirds package list <slug>
+bowerbirds package create <slug> <title> [--summary text]
+bowerbirds package compose --file <package.json> --images <scene-paths.json> [--slug slug]
+bowerbirds package update <item-id> --file <package.json>
+bowerbirds package copy <item-id> --file <package.json>
+bowerbirds package fetch <slug> <item-id> --out <path>
+bowerbirds package validate <slug> <item-id>
+bowerbirds package submit <slug> <item-id> <package.json>
+bowerbirds video jobs [--bucket slug] [--state state]
+bowerbirds video enqueue <slug> <recording-id> [--prompt text] [--backend sidecar|cloud]
+bowerbirds video claim <worker-id> [--backend sidecar|cloud]
+bowerbirds video update <job-id> --state state [options]
+bowerbirds video cancel <job-id>
+```
+
+Package filling commands provide a stateful multi-capture workflow: `filling-state`, `filling-start`, `filling-resume`, `filling-append`, `filling-finish`, and `filling-abandon`.
+
+`package filling-ai-name` asks Bowerbirds Cloud to name the Package currently being filled. The older `tutorial list|create|fetch|submit` commands remain compatibility aliases for pre-Package integrations.
+
+## Cloud
+
+```text
+bowerbirds cloud login
+bowerbirds cloud logout
+bowerbirds cloud whoami
+bowerbirds cloud devices
+bowerbirds cloud signout-all
+bowerbirds cloud orgs [list|use|members|invite|create|invites|accept|leave]
+bowerbirds cloud buckets [list|create|delete|deleted|restore|purge]
+bowerbirds cloud keys [mint|list]
+bowerbirds cloud push <bucket-slug> [--to owner/slug]
+bowerbirds cloud pull <owner/slug> [--as local-name]
+bowerbirds cloud sync <bucket-slug> [on|off]
+bowerbirds cloud share <slug> <email> [--role read|contribute|admin]
+bowerbirds cloud capture <owner>/<slug>/<item-id> [--out directory]
+bowerbirds cloud captures <owner>/<slug> [--limit N] [--since RFC3339]
+bowerbirds cloud recording process <bucket-slug> <item-id> --template <id> [--frames seconds,...] [--follow]
+bowerbirds cloud jobs [enqueue|list]
+bowerbirds cloud records <list|payload|search|show|move|trash|edit-text|copy|package-open|package-save|package-copy|annotation-open|annotation-save>
+bowerbirds cloud flows <list|show|create|create-app|edit-app|duplicate|delete|run|apply>
+bowerbirds cloud rfis <list|answer>
+bowerbirds cloud export-issue <owner/slug> --repo <owner/repo> [--item local-id]
+bowerbirds cloud web-captures <list|mint|rename|origins|set-disabled|set-recording|reveal|rotate|delete|restore>
+bowerbirds cloud forms <list|create|update|delete|generate|policy>
+bowerbirds cloud structure <create-bucket|create-directory|edit|move|delete-directory|delete-bucket>
+bowerbirds cloud usage
+```
+
+Use `--org <id-or-slug>` with cloud commands to target a workspace without switching.
+
+The advertised `cloud login --url` spelling is not currently wired into login. Set `BOWERBIRDS_CLOUD_URL` before invoking the CLI when targeting a non-default endpoint.
+
+For two read-only shortcuts, `bowerbirds buckets --cloud` lists cloud Buckets and `bowerbirds bucket show <owner/slug> --cloud` lists one Bucket. Their output is human text even when `--json` is also present.
+
+## MCP and Inbox
+
+```text
+bowerbirds mcp
+bowerbirds inbox dictations list [--workspace id]
+bowerbirds inbox dictations retry <id> [--workspace id]
+bowerbirds inbox dictations discard <id>
+bowerbirds inbox uploads retry <item-id>
+```
+
+<Note>
+  Some low-level capture and Package commands are intended for the native apps or worker integrations. Prefer the higher-level workflows unless you are implementing one of those surfaces.
+</Note>
