@@ -30,6 +30,10 @@ Avoid base64 in shell arguments. `bowerbirds import` copies a readable path into
 - Treat a failed Package validation as an incomplete result even if the draft was saved.
 - Keep the returned item ID and payload name together.
 
+## Run as an agent, not as a person
+
+Automation that acts on cloud records should hold its own credential. On a machine with a browser, `bowerbirds cloud tokens login` obtains one through OAuth; on a CI runner, present a token minted by hand through `BOWERBIRDS_TOKEN`. Sign the records the job handled (`cloud records sign`) so the next run's `--unsigned` listing starts where this one stopped.
+
 ## Check the executable first
 
 ```sh

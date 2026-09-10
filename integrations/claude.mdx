@@ -1,35 +1,35 @@
 ---
 title: "Claude Code and Claude Desktop"
-description: "Connect Claude to the local MCP server included with Bowerbirds."
+description: "Connect Claude to the Bowerbirds remote MCP door."
 icon: "robot"
 ---
 
 ## Claude Code
 
 ```sh
-claude mcp add bowerbirds -- \
-  '/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds' mcp
+claude mcp add --transport http bowerbirds \
+  https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
 ```
 
-Run `claude mcp list` to confirm the connection, then restart Claude Code if it was already open.
+Run `claude mcp list` to confirm the connection. The first tool call opens the approval page in your browser: sign in, pick the workspace and the role, and approve.
+
+The [Bowerbirds plugin](/integrations/plugins) adds the same server together with a skill and a `/bowerbirds-triage` command.
 
 ## Claude Desktop
 
-Add a local stdio server named `bowerbirds`:
+Add a remote server named `bowerbirds`:
 
 ```json
 {
-  "command": "/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds",
-  "args": ["mcp"]
+  "type": "http",
+  "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp"
 }
 ```
 
-Restart Claude Desktop after saving the configuration.
+Restart Claude Desktop after saving the configuration and complete the approval when it opens.
 
 ## Verify
 
-Ask Claude to call `get_server_info` and `list_buckets` without making changes.
-
-For an approved remote connection, use the endpoint and credential supplied by your Bowerbirds workspace administrator. See [Remote MCP connection](/mcp/remote-server).
+Ask Claude to list a Bucket's records without making changes.
 
 See Anthropic's [MCP documentation](https://code.claude.com/docs/en/mcp) for client-level settings.

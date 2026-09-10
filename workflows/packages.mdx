@@ -8,25 +8,27 @@ A Package is an ordered, portable view over existing context. Use one for a hand
 
 ## Golden path for agents
 
+Packages are authored through the CLI; the remote MCP door reads them like any other record.
+
 <Steps>
   <Step title="Find or create a Bucket">
-    Call `list_buckets`; reuse the requested destination or call `create_bucket` once.
+    `bowerbirds buckets --json`; reuse the requested destination or `bowerbirds bucket create` once.
   </Step>
   <Step title="Create or import every source">
-    Prefer `import_local_file` for screenshots produced by browser automation. Use `add_image_item` when the image is already in model/tool memory. For the user's screen, use `request_capture_authorization`.
+    `bowerbirds import <slug> <path>` for screenshots produced by browser automation. For the user's screen, ask the person to capture it in the app.
   </Step>
   <Step title="Resolve payload names">
-    Call `list_item_files` for each source. Keep the returned record ID and exact payload name; do not guess `image.png` or `annotated.png`.
+    `bowerbirds item files <slug> <item-id> --json` for each source. Keep the returned record ID and exact payload name; do not guess `image.png` or `annotated.png`.
   </Step>
   <Step title="Build and validate the Package">
-    Follow the Package-authoring resource exposed by the local MCP server, then call `validate_package` before saving. Resolve missing assets and validation errors first.
+    Compose `package.json`, then `bowerbirds package validate <slug> <item-id> --json` before saving. Resolve missing assets and validation errors first.
   </Step>
   <Step title="Save and verify">
-    Call `upsert_package` without `itemId` to create. Then call `get_package` and confirm scene, entry, annotation, and resolved-asset counts. `valid: false` means the draft was saved, not completed.
+    `bowerbirds package submit <slug> <item-id> package.json`, then `bowerbirds package fetch` and confirm scene, entry, annotation, and resolved-asset counts. `valid: false` means the draft was saved, not completed.
   </Step>
   <Step title="Ask for visual review">
     JSON validation checks graph consistency; it cannot prove a spotlight covers the intended control. Ask the user to open the Package in Bowerbirds.
   </Step>
 </Steps>
 
-The MCP authoring resource is the source of truth for the Package format supported by the installed Bowerbirds version. This keeps agents aligned with the app they are actually connected to.
+Cloud Packages are edited in place with `bowerbirds cloud records package-open`, `package-save` and `package-copy`; see the [CLI command reference](/reference/cli-commands).

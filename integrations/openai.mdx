@@ -1,33 +1,24 @@
 ---
 title: "ChatGPT and Codex"
-description: "Connect a supported OpenAI desktop client or Codex to Bowerbirds."
+description: "Connect a supported OpenAI client or Codex to the Bowerbirds remote MCP door."
 icon: "message"
 ---
-
-## ChatGPT desktop
-
-In the desktop app's MCP settings, add a local stdio server named `bowerbirds` with:
-
-```text
-/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds mcp
-```
-
-Save the configuration and restart the client if needed.
 
 ## Codex CLI
 
 ```sh
-codex mcp add bowerbirds -- \
-  '/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds' mcp
+codex mcp add bowerbirds --url https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
 codex mcp list
 ```
 
+The first tool call opens the approval page in your browser. The [Bowerbirds plugin](/integrations/plugins) packages the same server with a skill as an Agent Plugin.
+
+## ChatGPT
+
+Enable developer mode in ChatGPT's settings and add the endpoint as a remote MCP server. ChatGPT runs the OAuth approval when it first connects.
+
 ## Verify
 
-Ask the client to call `get_server_info` and `list_buckets` without making changes.
-
-<Note>
-  A public ChatGPT web integration is not currently available. Use a supported desktop MCP client, or an approved remote connection supplied by your Bowerbirds workspace administrator.
-</Note>
+Ask the client to list a Bucket's records without making changes.
 
 See the official OpenAI documentation for [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).

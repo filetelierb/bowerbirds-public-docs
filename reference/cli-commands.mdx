@@ -86,19 +86,28 @@ bowerbirds cloud share <slug> <email> [--role read|contribute|admin]
 bowerbirds cloud capture <owner>/<slug>/<item-id> [--out directory]
 bowerbirds cloud captures <owner>/<slug> [--limit N] [--since RFC3339]
 bowerbirds cloud recording process <bucket-slug> <item-id> --template <id> [--frames seconds,...] [--follow]
-bowerbirds cloud records <list|payload|search|show>
+bowerbirds cloud records <list|payload|search|show|move|trash|sign|unsign|push-capture|edit-text|copy>
+bowerbirds cloud records list <owner/slug[/path]> [--exact] [--kind a,b] [--since RFC3339] [--signed|--unsigned] [--limit N] [--cursor c]
+bowerbirds cloud records push-capture <owner/slug[/path]> --image <png|jpg> [--original <png>] [--session <json>] [--title t] [--content text] [--tags a,b]
+bowerbirds cloud records sign|unsign <owner/slug> --ids <id,id>
+bowerbirds cloud records move <owner/slug[/path]> --ids <id,id> --to <owner/slug[/path]>
+bowerbirds cloud records trash <owner/slug> --ids <id,id>
+bowerbirds cloud tokens login [--scope read|contribute|admin] [--no-browser]
+bowerbirds cloud tokens logout
+bowerbirds cloud tokens status
+bowerbirds cloud tokens mint --label <label> --role read|contribute|admin [--bucket <owner/slug>]
+bowerbirds cloud tokens list [--bucket <owner/slug>]
+bowerbirds cloud tokens revoke <id> [--bucket <owner/slug>]
 bowerbirds cloud flows <list|show|run|apply>
 bowerbirds cloud rfis <list|answer>
 bowerbirds cloud web-captures <list|mint|rename|origins|set-disabled|set-recording|reveal|rotate|delete|restore>
 bowerbirds cloud usage
 ```
 
-Use `--org <id-or-slug>` with cloud commands to target a workspace without switching.
+Use `--org <id-or-slug>` with cloud commands to target a workspace without switching. Add `--token <bbt_…>` (or set `BOWERBIRDS_TOKEN`) to act as an agent token instead of the signed-in person; a `tokens login` credential is used when neither is set.
 
 ## MCP
 
-```text
-bowerbirds mcp
-```
+There is no local MCP server. Agents connect to the remote door; see [MCP overview](/mcp/overview).
 
 Run `bowerbirds help` or `bowerbirds <command> --help` for options supported by your installed version.

@@ -1,27 +1,55 @@
 ---
-title: "Remote access credentials"
-description: "Use and protect credentials for an approved remote MCP connection."
+title: "Agent tokens"
+description: "What an approval grants, how to mint a token by hand, and how to revoke either."
 icon: "key"
 ---
 
-A remote MCP credential grants an integration access to one cloud Bucket with a specific role. Your Bowerbirds workspace administrator supplies the endpoint and credential together.
+An agent acts as its own token, never as a person. A token has one role and one scope, and a workspace owner or administrator can revoke it at any time.
 
-## Choose a role
+## Roles
 
 | Role | Use when |
 | --- | --- |
-| `read` | The integration only needs to inspect records and captures |
-| `contribute` | The integration also needs to add findings |
+| `read` | The agent fetches records and signs what it handled |
+| `contribute` | The agent also files, moves and trashes records |
+| `admin` | The agent also administers Buckets |
 
 Use the narrowest role that supports the workflow.
 
-## Protect the credential
+## Scopes
 
-- Store it in the MCP client's secret storage or an environment variable.
+- A **workspace token** opens every Bucket the workspace owns. This is what an approval in the browser grants, and what an agent needs to move a record between Buckets.
+- A **Bucket token** opens exactly one Bucket. Mint one by hand when an agent should see nothing else.
+
+## Approved in the browser
+
+When an MCP client, or the CLI's `tokens login`, connects through OAuth, the person signs in, picks the workspace and the role, and approves. The grant is a workspace token held by that client: the client receives an access token that expires after one hour and a refresh token that lasts thirty days and rotates on every use. A refresh token presented twice revokes the whole grant.
+
+## Minted by hand
+
+For an agent with no browser, such as a CI job, mint a token and hand it over. It is shown once; only its hash is kept.
+
+```sh
+bowerbirds cloud tokens mint --label "ci reviewer" --role contribute            # workspace token
+bowerbirds cloud tokens mint --label "ci reviewer" --role read --bucket me/qa   # Bucket token
+```
+
+The Mac app's **Settings → Developer Tools** mints workspace tokens too.
+
+## See and revoke connections
+
+Every connection of the workspace — approved in the browser or minted by hand — is listed in **Settings → Developer Tools** on the Mac, with its label, role and origin, and a revoke control. From the CLI:
+
+```sh
+bowerbirds cloud tokens list [--bucket me/qa]
+bowerbirds cloud tokens revoke <id> [--bucket me/qa]
+```
+
+Revocation is immediate: the next request refuses, every payload URL the token minted stops working, and its signatures are removed.
+
+## Protect a minted token
+
+- Store it in the client's secret storage or an environment variable.
 - Do not commit it to source control.
 - Do not paste it into support requests, screenshots, or shared documents.
-- Ask the workspace administrator to revoke and replace it if it may have been exposed.
-
-<Note>
-  Remote access is available only for Buckets whose administrator has provisioned an integration credential.
-</Note>
+- Revoke and replace it if it may have been exposed.

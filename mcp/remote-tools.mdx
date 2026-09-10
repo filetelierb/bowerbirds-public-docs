@@ -1,52 +1,88 @@
 ---
-title: "Remote MCP tools"
-description: "The supported tools for an approved Bucket-scoped remote connection."
-icon: "cloud-arrow-up"
+title: "Tools"
+description: "The tools the remote MCP door offers, and the two ideas behind them: payload URLs and signatures."
+icon: "toolbox"
 ---
 
-Remote MCP exposes a deliberately small surface for one shared Bucket.
+A Bucket token acts on its Bucket only. A workspace token names the Bucket on every call with `slug` (and `owner` when it is not the workspace itself).
+
+| Tool | Purpose |
+| --- | --- |
+| `list_items` | Fetch records newest first with filters, in pages |
+| `get_capture` | Read one record whole: content, parsed comments, payload manifest, `signed` |
+| `list_captures` | The older text-only sweep (`limit`, `since`) |
+| `list_directories` | The Bucket's directory paths, for filing and moving |
+| `add_capture` | File a record and receive one upload URL per declared payload |
+| `move_items` | Move records to a directory, in this Bucket or another one of the workspace |
+| `trash_items` | Move records to the Trash; a person can restore them |
+| `sign_items` / `unsign_items` | Put this token's mark on records, or take it off |
+| `add_finding` | A short note at the Bucket root |
 
 ## `list_items`
 
-Lists the records available to the connection. It does not include file bytes.
-
-```json
-{}
-```
-
-## `list_captures`
-
-Lists recent captures. Use optional filters only when supported by the tool definition shown in your MCP client.
-
 ```json
 {
-  "limit": 20
+  "slug": "qa",
+  "kind": ["capture", "note"],
+  "path": "login",
+  "since": "2026-09-01T00:00:00Z",
+  "signed": false,
+  "limit": 50
 }
 ```
+
+- `kind` keeps one or several record kinds.
+- `path` scopes to a directory's subtree; `exact: true` narrows it to that directory alone.
+- `since` keeps records changed strictly after an RFC3339 instant.
+- `signed` keeps records this token has signed (`true`) or has not (`false`).
+- Pages hold at most 200 records; pass the answer's `nextCursor` as `cursor` for the next page.
+
+Every record answers `signed: true|false` for the calling token.
 
 ## `get_capture`
 
-Returns one capture and its file metadata.
+```json
+{ "slug": "qa", "item_id": "<record-id>" }
+```
+
+A capture's `content` is the numbered list of comments about the picture; `comments` is the same list parsed out. The payload manifest lists `{name, role, mimeType, size, url}` for each file. By convention a capture carries `annotated.png` (role `annotated`, the picture with the pins drawn on it), `raw.png` (role `original`) and `session.json` (role `capture-session`, the editable annotations).
+
+## Payloads
+
+Payload bytes never cross the MCP door. Each `url` is **short-lived (15 minutes) and self-authenticating**: fetch it with a plain HTTP GET and no header. A URL stops working the moment its token is revoked.
+
+`add_capture` works the same way for uploads:
 
 ```json
 {
-  "item_id": "<record-id>"
+  "slug": "qa",
+  "title": "Login form",
+  "content": "Global comments:\n 1. Button off-center",
+  "directoryPath": "login",
+  "tags": ["ci"],
+  "payloads": [
+    { "name": "annotated.png", "mimeType": "image/png", "size": 183211, "role": "annotated" },
+    { "name": "raw.png", "mimeType": "image/png", "size": 160004, "role": "original" }
+  ]
 }
 ```
 
-Download URLs require the same authorization credential as the MCP connection.
+It files the record and answers one upload URL per declared payload. PUT the bytes to it with exactly the `Content-Type` and `Content-Length` it lists, within 15 minutes. Bytes that differ from what was declared are refused before anything is stored. `kind` defaults to `capture`; `note` and `file` are accepted.
 
-## `add_finding`
+## Signatures
 
-Adds a text finding when the connection has `contribute` access.
+A signature is the token's own mark on a record. It changes nothing on the record, so any role that can read may sign. Use it as the agent's queue: `list_items` with `signed: false` is what this token has not handled yet; `sign_items` after handling a record keeps it out of the next sweep.
+
+Another token sees only its own marks. A person's session sees no `signed` field and cannot sign. Revoking a token removes its marks.
+
+## `move_items` and `trash_items`
 
 ```json
-{
-  "title": "Checkout regression",
-  "content": "The address form loses its country value after validation."
-}
+{ "slug": "qa", "ids": ["<id>", "<id>"], "toBucketSlug": "archive", "toDirectoryPath": "done" }
 ```
 
-<Note>
-  Use local MCP for richer file, Scratchpad, Package, and human-approval workflows.
-</Note>
+Moves follow the app's rules: write access on both sides, a record in the Trash refuses, a deleted or intake Bucket refuses, and a move to where the record already is succeeds and changes nothing. `trash_items` takes `{ "slug", "ids" }` and answers what was trashed, what was already gone, and what refused. Nothing here deletes for good.
+
+## What an agent cannot do
+
+Mint credentials wider than itself, read the Trash, read another workspace, switch workspaces, or reach a Bucket that takes submissions through a publishable web key only. Every refusal names its reason.

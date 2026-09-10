@@ -1,11 +1,8 @@
 {
   "mcpServers": {
     "bowerbirds": {
-      "command": "/bin/sh",
-      "args": [
-        "-c",
-        "cli=${BOWERBIRDS_CLI:-/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds}; if [ ! -x \"$cli\" ]; then echo \"Bowerbirds CLI not found at $cli. Install Bowerbirds or set BOWERBIRDS_CLI before starting your client.\" >&2; exit 127; fi; exec \"$cli\" mcp"
-      ]
+      "type": "http",
+      "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp"
     }
   }
 }

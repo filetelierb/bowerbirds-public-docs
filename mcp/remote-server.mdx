@@ -1,29 +1,62 @@
 ---
-title: "Remote MCP connection"
-description: "Connect an approved hosted agent to one Bowerbirds Bucket."
+title: "Connect a client"
+description: "Add the remote MCP door to an MCP client and approve the connection in your browser."
 icon: "cloud"
 ---
 
-Remote MCP is for hosted or off-device agents. A Bowerbirds workspace administrator supplies:
+The remote MCP door is an HTTP MCP server with OAuth. A client that supports it discovers the authorization server by itself, registers, and opens an approval page in your browser. You sign in, pick the workspace and the role, and approve. The client receives a short-lived access token and a refresh token; nothing is pasted anywhere.
 
-- the HTTPS MCP endpoint;
-- a credential scoped to one Bucket;
-- either `read` or `contribute` access.
+```text
+https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
+```
 
-<Warning>
-  Do not use an infrastructure hostname or endpoint copied from development material. Use only the connection details supplied for your workspace.
-</Warning>
+<Steps>
+  <Step title="Add the endpoint">
+    <Tabs>
+      <Tab title="Claude Code">
+        ```sh
+        claude mcp add --transport http bowerbirds \
+          https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
+        ```
+      </Tab>
+      <Tab title="JSON configuration">
+        ```json
+        {
+          "mcpServers": {
+            "bowerbirds": {
+              "type": "http",
+              "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp"
+            }
+          }
+        }
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+  <Step title="Approve in the browser">
+    The first tool call opens the approval page. Sign in with Google, Apple, or an emailed link. Choose the workspace, the role — `read`, `contribute` or `admin` — and a label, then approve.
 
-## Configure an HTTP MCP client
+    Only an owner or an administrator of a workspace can authorize an agent in it.
+  </Step>
+  <Step title="Verify the scope">
+    Ask the client to list a Bucket's records without making changes. Confirm it sees the intended workspace before enabling a write-capable workflow.
+  </Step>
+</Steps>
 
-Use the values supplied by the administrator:
+## What the client receives
+
+An access token that expires after one hour and a refresh token that lasts thirty days and rotates on every use. The client refreshes by itself. The approval appears in the workspace's agent connections, under the client's name, where it can be revoked at any time. See [Agent tokens](/mcp/agent-tokens).
+
+## Clients without OAuth
+
+A client that cannot run the browser flow can present a token minted by hand as a bearer header:
 
 ```json
 {
   "mcpServers": {
     "bowerbirds": {
       "type": "http",
-      "url": "<BOWERBIRDS_MCP_URL>",
+      "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp",
       "headers": {
         "Authorization": "Bearer ${BOWERBIRDS_AGENT_TOKEN}"
       }
@@ -32,14 +65,12 @@ Use the values supplied by the administrator:
 }
 ```
 
-Keep the credential in the client's secret storage or an environment variable rather than committing it with the configuration.
-
-## Verify the scope
-
-After connecting, ask the client to list records without making changes. Confirm that it can see only the intended Bucket before enabling a write-capable workflow.
+Keep the token in the client's secret storage or an environment variable rather than committing it with the configuration.
 
 ## Fetching files
 
-Remote capture tools return file metadata and authenticated download URLs. Fetch only the payload you need and send the same authorization credential when the client requests it.
+Payload bytes never cross MCP. Every payload answers a URL that is short-lived and self-authenticating: the client fetches it with a plain HTTP GET and no credential. See [Tools](/mcp/remote-tools#payloads).
 
-See [Remote MCP tools](/mcp/remote-tools) for the supported tool surface.
+## Plugins
+
+The [Bowerbirds plugins](/integrations/plugins) bundle this endpoint with a skill that teaches the agent how records, payload URLs and signatures work.

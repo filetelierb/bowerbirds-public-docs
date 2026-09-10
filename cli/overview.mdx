@@ -4,7 +4,7 @@ description: "Install and use the bowerbirds command for local and cloud context
 icon: "terminal"
 ---
 
-The `bowerbirds` CLI shares the app's local store and also provides explicit authenticated cloud commands.
+The `bowerbirds` CLI shares the app's local store and also provides explicit authenticated cloud commands. Run as a person, it acts with your session; logged in as an agent, it acts with a token of its own.
 
 ## Locate the executable
 
@@ -23,11 +23,23 @@ Add a shell alias if you want to invoke it as `bowerbirds` from anywhere.
 bowerbirds buckets --json
 bowerbirds bucket show research --json
 
-# Authenticated Bowerbirds Cloud
+# Authenticated Bowerbirds Cloud, as yourself
 bowerbirds cloud login
 bowerbirds cloud whoami
 bowerbirds cloud buckets list
 ```
+
+## As an agent
+
+A coding agent logs the CLI in through OAuth instead of using your session: the browser signs you in and asks which workspace and role to grant, and the CLI receives a credential of its own that refreshes itself.
+
+```sh
+bowerbirds cloud tokens login --scope contribute
+bowerbirds cloud tokens status
+bowerbirds cloud records list me/qa --unsigned --json
+```
+
+See [Cloud workflows](/cli/cloud-workflows#work-as-an-agent).
 
 ## Machine-readable output
 

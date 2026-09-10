@@ -4,29 +4,31 @@ description: "Connect Claude, ChatGPT, Codex, Cursor, Antigravity, and other MCP
 icon: "puzzle-piece"
 ---
 
-Bowerbirds uses standard MCP. The supported public setup today is a local MCP connection to the CLI included with the macOS app.
+Bowerbirds uses standard MCP over HTTPS. Every client connects to the same remote door and approves the connection in your browser; no client runs anything on your Mac.
+
+```text
+https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
+```
 
 | Client | Connection | Setup |
 | --- | --- | --- |
-| Claude Code | Local stdio | `claude mcp add` |
-| Claude Desktop | Local stdio | Desktop MCP configuration |
-| ChatGPT desktop / Codex | Local stdio | MCP settings or `codex mcp add` |
-| Cursor | Local stdio | `mcp.json` |
-| Antigravity | Local stdio | `mcp_config.json` |
+| Claude Code | Remote HTTP with OAuth | `claude mcp add --transport http` |
+| Claude Desktop | Remote HTTP with OAuth | Desktop MCP configuration |
+| ChatGPT desktop / Codex | Remote HTTP with OAuth | MCP settings or `codex mcp add` |
+| Cursor | Remote HTTP with OAuth | `mcp.json` |
+| Antigravity | Remote HTTP with a minted token | `mcp_config.json` |
 
 <Info>
-  Marketplace plugins are not currently distributed publicly. Use the standard MCP setup in the client guides below.
+  The [Bowerbirds plugins](/integrations/plugins) bundle the endpoint and a skill for Claude Code and Codex. Marketplace installation becomes available once the repository is published.
 </Info>
 
-Approved hosted agents can also use remote MCP. Your workspace administrator must supply the endpoint and scoped credential; infrastructure URLs found elsewhere are not supported connection details.
-
-## Verify any local client
+## Verify any client
 
 After connecting, ask the agent:
 
-> Call `get_server_info`, list my Bowerbirds Buckets, and tell me which tools you can use. Do not write or delete anything.
+> Use Bowerbirds. List the records in my `<bucket>` Bucket and summarize them. Do not write or delete anything.
 
-If the tool list is missing, restart the client after saving its MCP configuration. If a record is missing, make sure it is filed into a Bucket rather than left in Unsorted.
+The first call opens the approval page in your browser. If the tool list is missing, restart the client after saving its MCP configuration.
 
 <CardGroup cols={2}>
   <Card title="Claude" icon="robot" href="/integrations/claude">

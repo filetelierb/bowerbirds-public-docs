@@ -15,6 +15,38 @@ Login asks for an email and sends a sign-in link. The session is shared with clo
 
 Use `bowerbirds cloud logout` to remove it.
 
+## Work as an agent
+
+A coding agent should not act as you. Log the CLI in as an agent through OAuth: the browser signs you in, you pick the workspace and the role, and the CLI receives a short-lived access token and a rotating refresh token.
+
+```sh
+bowerbirds cloud tokens login [--scope read|contribute|admin] [--no-browser]
+bowerbirds cloud tokens status
+bowerbirds cloud tokens logout
+```
+
+The credential lives in `~/.bowerbirds/agent-token.json` (mode 600) and refreshes itself. `--token bbt_…` or `BOWERBIRDS_TOKEN` present a token minted by hand instead, and take precedence. Every cloud verb then acts as the token.
+
+```sh
+bowerbirds cloud records list me/qa/login --kind capture,note --unsigned --limit 50 --json
+bowerbirds cloud records list me/qa --since 2026-09-01T00:00:00Z --cursor <cursor>
+bowerbirds cloud records show me/qa <item-id> --json
+bowerbirds cloud records push-capture me/qa/login --image annotated.png --original raw.png \
+  --session session.json --title "Login form" --content "Global comments:\n 1. Button off-center"
+bowerbirds cloud records move me/qa --ids <id,id> --to me/archive/done
+bowerbirds cloud records trash me/qa --ids <id,id>
+bowerbirds cloud records sign me/qa --ids <id,id>
+bowerbirds cloud records unsign me/qa --ids <id,id>
+```
+
+Locations are `owner/slug[/directory/path]`; `me` is the token's workspace. `--signed` and `--unsigned` filter on the token's own mark, and `--json` answers `signed` on every row. See [Agent tokens](/mcp/agent-tokens) for minting, listing and revoking:
+
+```sh
+bowerbirds cloud tokens mint --label "ci reviewer" --role contribute [--bucket me/qa]
+bowerbirds cloud tokens list [--bucket me/qa]
+bowerbirds cloud tokens revoke <id> [--bucket me/qa]
+```
+
 ## Workspaces
 
 ```sh
@@ -41,7 +73,8 @@ bowerbirds cloud sync launch-research on
 ## Read cloud records
 
 ```sh
-bowerbirds cloud records list <location-cloud-slug> --json
+bowerbirds cloud records list <local-location-slug> --json
+bowerbirds cloud records list <owner/slug[/path]> [--exact] [--kind a,b] [--since RFC3339] [--limit N] [--cursor c] --json
 bowerbirds cloud records search "address validation" \
   --bucket <bucket-cloud-slug> \
   --kind capture \

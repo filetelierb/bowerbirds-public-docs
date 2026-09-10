@@ -1,0 +1,32 @@
+---
+title: "Plugins"
+description: "Installable packages for Claude Code and Codex that bundle the remote MCP door and a skill."
+icon: "puzzle-piece"
+---
+
+The `bowerbirds-plugins` repository packages the same thing for two ecosystems: the remote MCP door, which the client authorizes in your browser, plus a `bowerbirds-records` skill that teaches the agent how records, payload URLs and signatures work.
+
+## Claude Code
+
+Once the repository is published:
+
+```sh
+claude plugin marketplace add filetelierb/bowerbirds-plugins
+claude plugin install bowerbirds@bowerbirds
+```
+
+From a checkout, without a marketplace:
+
+```sh
+claude --plugin-dir ./claude
+```
+
+The plugin adds the `bowerbirds` MCP server, the skill, and a `/bowerbirds-triage` command that sweeps a Bucket's unsigned records, acts on each, and signs it.
+
+## Codex and ChatGPT
+
+The repository's `codex/` directory is an Agent Plugin: `plugin.json`, `mcp.json` naming the remote server, the skill, and the `.codex-plugin/` compatibility manifest. Install it from that path in the Codex CLI, or register the MCP endpoint in ChatGPT's developer mode.
+
+<Note>
+  Marketplace installation becomes available once the repository is published. Until then, add the endpoint by hand as described in [Connect a client](/mcp/remote-server).
+</Note>

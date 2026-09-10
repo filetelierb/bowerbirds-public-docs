@@ -11,15 +11,15 @@ flowchart LR
   A[Capture or import] --> B[Review and organize]
   B --> C[Optional processing]
   C --> D[Search, share, package, or export]
-  B --> E[CLI and local MCP]
-  D --> F[Approved remote integrations]
+  B --> E[CLI]
+  D --> F[Coding agents over remote MCP]
 ```
 
 ## Local work
 
-The macOS and iOS apps are the main surfaces for capture, review, annotation, and organization. The macOS CLI and local MCP connection let scripts and AI clients work with filed local Buckets.
+The macOS and iOS apps are the main surfaces for capture, review, annotation, and organization. The macOS CLI lets scripts work with filed local Buckets and, signed in, with the cloud.
 
-Content in **Unsorted** remains private to the device and is not available through MCP. File a record into a Bucket before using it programmatically.
+Content in **Unsorted** remains private to the device and is not available to agents. File a record into a Bucket before using it programmatically.
 
 ## Cloud work
 
@@ -31,8 +31,7 @@ Cloud features are optional and operate on the Buckets you choose to sync or sha
 | --- | --- |
 | Capture or review content | Bowerbirds app |
 | Automate on the same Mac | CLI |
-| Give a local AI client access | Local MCP |
-| Connect an approved hosted agent | Remote MCP |
+| Connect a coding agent | Remote MCP, approved in your browser |
 
 <Note>
   Screen and microphone capture always remains a visible, user-controlled app action.

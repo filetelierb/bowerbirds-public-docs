@@ -23,7 +23,7 @@ This is the common user-facing flow behind screenshots, notes, recordings, and i
     A person or approved policy files the record to an allowed destination. Only selected shared locations synchronize; local-only and Unsorted records do not.
   </Step>
   <Step title="Consume or compose">
-    Apps, CLI, or MCP clients search records, fetch selected payloads, add findings, create Packages, or export a portable folder.
+    Apps, the CLI, or agents over MCP search records, fetch selected payloads, add findings, create Packages, or export a portable folder.
   </Step>
 </Steps>
 
@@ -55,4 +55,4 @@ bowerbirds item files checkout-investigation <item-id> --json
 bowerbirds bucket fetch checkout-investigation --out ./handoff
 ```
 
-The equivalent agent workflow uses `create_bucket`, `import_local_file`, `list_item_files`, and `export_bucket`.
+The equivalent agent workflow over the remote MCP door uses `add_capture` to file, `list_items` and `get_capture` to read, and `sign_items` to mark what it handled.

@@ -1,31 +1,41 @@
 ---
 title: "MCP overview"
-description: "Connect an AI client to Bowerbirds locally or through approved remote access."
+description: "Connect a coding agent to your Bowerbirds workspace through the remote MCP door."
 icon: "plug"
 ---
 
-Bowerbirds supports two MCP connection types.
+Bowerbirds offers coding agents one MCP surface: the **remote MCP door** on Bowerbirds Cloud. An agent works the same cloud records a person sees in the apps, under the same rules, and every write is attributed to the agent's own token.
 
-| | Local MCP | Remote MCP |
-| --- | --- | --- |
-| Runs from | The Mac with Bowerbirds installed | A hosted Bowerbirds endpoint |
-| Connection | `bowerbirds mcp` over stdio | HTTPS |
-| Scope | Filed local Buckets | One approved cloud Bucket |
-| Best for | Desktop agents and rich local workflows | Hosted or off-device agents |
+| | Remote MCP |
+| --- | --- |
+| Endpoint | `https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp` over HTTPS |
+| Credential | Obtained through OAuth in your browser, or a token minted by hand |
+| Scope | One workspace (every Bucket in it) or one Bucket, with one role |
+| Best for | Claude Code, Codex, Cursor and any MCP client that speaks OAuth |
+
+<Note>
+  The local stdio server (`bowerbirds mcp`) was retired on 2026-09-10. Clients configured for it must be pointed at the remote door; see [Connect a client](/mcp/remote-server).
+</Note>
 
 <CardGroup cols={2}>
-  <Card title="Connect locally" icon="laptop" href="/mcp/local-server">
-    Recommended when the AI client runs on the same Mac.
+  <Card title="Connect a client" icon="cloud" href="/mcp/remote-server">
+    Add the endpoint; approve the connection in your browser.
   </Card>
-  <Card title="Connect remotely" icon="cloud" href="/mcp/remote-server">
-    Use connection details supplied by your Bowerbirds workspace administrator.
+  <Card title="Agent tokens" icon="key" href="/mcp/agent-tokens">
+    What an approval grants, how to mint a token by hand, and how to revoke either.
+  </Card>
+  <Card title="Tools" icon="toolbox" href="/mcp/remote-tools">
+    Fetch, file, move, trash and sign records.
+  </Card>
+  <Card title="Plugins" icon="puzzle-piece" href="/integrations/plugins">
+    Installable packages for Claude Code and Codex.
   </Card>
 </CardGroup>
 
 ## Verify a connection
 
-For a local connection, ask the client to call `get_server_info` and `list_buckets`. For a remote connection, ask it to list the records in the Bucket it was granted.
+Ask the agent to call `list_items` on a Bucket without making changes. Every record it answers carries `signed: false` the first time; that field is the agent's own mark, explained in [Tools](/mcp/remote-tools#signatures).
 
 ## Capture permissions
 
-MCP cannot silently capture the screen or microphone. Local clients can create a visible one-time request that the person must approve in Bowerbirds.
+An agent never captures the screen or microphone. Captures are taken by a person in the Bowerbirds apps; the agent reads what was filed and files what it produces.

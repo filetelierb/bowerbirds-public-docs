@@ -44,19 +44,15 @@ Live Dictation normally delivers successful text directly to the active app and 
   </Step>
 </Steps>
 
-## MCP equivalent
+## Agent equivalent
 
-Call `get_scratchpad`, then `update_scratchpad` with:
+An agent edits a Scratchpad through the CLI, reading the revision first and passing it back:
 
-```json
-{
-  "slug": "research",
-  "itemId": "01J...",
-  "expectedRevision": 3,
-  "operation": "append",
-  "content": "\n\n## Follow-up\nConfirm the launch owner.",
-  "instruction": "Append the open question"
-}
+```sh
+bowerbirds scratchpad show research 01J... --json
+bowerbirds scratchpad append research 01J... --revision 3 \
+  --content "\n\n## Follow-up\nConfirm the launch owner." \
+  --instruction "Append the open question"
 ```
 
-`operation` can be `replace` or `append`. The `instruction` becomes part of the revision history.
+`update` replaces and `append` adds. The `--instruction` becomes part of the revision history.

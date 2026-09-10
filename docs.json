@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
   "name": "Bowerbirds",
-  "description": "Capture context once, then work with it from the Bowerbirds apps, CLI, local MCP server, or cloud.",
+  "description": "Capture context once, then work with it from the Bowerbirds apps, the CLI, coding agents over MCP, or the cloud.",
   "colors": {
     "primary": "#2856A4",
     "light": "#789CE9",
@@ -76,9 +76,9 @@
             "group": "Connection reference",
             "pages": [
               "mcp/overview",
-              "mcp/local-server",
               "mcp/remote-server",
               "mcp/agent-tokens",
+              "integrations/plugins",
               "reference/troubleshooting"
             ]
           }
@@ -115,15 +115,14 @@
             "group": "Connect",
             "pages": [
               "mcp/overview",
-              "mcp/local-server",
               "mcp/remote-server",
-              "mcp/agent-tokens"
+              "mcp/agent-tokens",
+              "integrations/plugins"
             ]
           },
           {
             "group": "Tool reference",
             "pages": [
-              "mcp/local-tools",
               "mcp/remote-tools",
               "reference/troubleshooting"
             ]
@@ -155,6 +154,21 @@
     }
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude"]
-  }
+    "options": [
+      "copy",
+      "view",
+      "chatgpt",
+      "claude"
+    ]
+  },
+  "redirects": [
+    {
+      "source": "/mcp/local-server",
+      "destination": "/mcp/remote-server"
+    },
+    {
+      "source": "/mcp/local-tools",
+      "destination": "/mcp/remote-tools"
+    }
+  ]
 }

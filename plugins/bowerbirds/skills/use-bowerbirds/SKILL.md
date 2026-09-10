@@ -1,31 +1,30 @@
 ---
 name: use-bowerbirds
-description: Use Bowerbirds when a task needs context from filed Buckets, captures, payloads, Scratchpads, Packages, or an explicit human capture or input request on the user's Mac.
+description: Use Bowerbirds when a task needs context from filed Buckets — annotated captures, notes, recordings — or should file, move, trash or sign records in a Bowerbirds workspace through the bowerbirds MCP server.
 ---
 
 # Use Bowerbirds
 
-Bowerbirds is a local-first context workspace. Use its MCP tools to retrieve or add durable context while preserving the user's requested scope.
+Bowerbirds is where people file annotated screenshots (captures), notes, dictations and screen recordings for their agents. You reach a workspace through the `bowerbirds` MCP server; the first call opens an approval page in the person's browser. You act as your own token, never as the person.
 
 ## Start safely
 
-For a new Bowerbirds workflow, call `get_server_info`, then `list_buckets`. Use `search_items` when the user describes content rather than naming a Bucket.
+Call `list_directories` and `list_items` on the Bucket the person named (`slug`; a workspace token names the Bucket on every call). Read before writing: do not file, move or trash records unless the person asked for that change.
 
-Read before writing. Do not create, move, update, or remove records unless the user asked for a change. `remove_item` moves a record to recoverable Trash, but it is still a mutation.
+## Records
 
-## Navigate context
+- A capture's `content` is a numbered list of comments about the picture; `get_capture` also answers `comments` parsed out. Its payloads are `annotated.png` (the picture with the pins), `raw.png` and `session.json`.
+- Payload bytes never come through MCP. Every payload `url` is short-lived (15 minutes) and self-authenticating: fetch it with a plain HTTP GET and no header.
+- `list_items` filters: `kind` (one or several), `path` (+ `exact`), `since`, `signed`; pages with `limit` and `cursor`.
 
-- `list_buckets` and ordinary search intentionally exclude private Unsorted captures. If the needed capture is still Unsorted, ask the user to file it in the app.
-- Call `list_item_files` before fetching a payload. Prefer `import_local_file` when another tool already produced a local file path.
-- Use Scratchpads for mutable, revisioned working documents. Refresh before retrying an `update_scratchpad` revision conflict.
-- Read and validate a Package before replacing it. Source records remain independent of Package documents.
+## Signatures
 
-## Human loop
+Every record answers `signed` for your token. `list_items` with `signed: false` is your queue; call `sign_items` when a record is handled and only then. Other tokens' marks are invisible to you.
 
-The MCP server cannot silently capture the screen or microphone. When new evidence is necessary, use `request_capture_authorization` or `request_input`, explain why it is needed, then use `await_response`. Treat denial or expiry as a normal outcome and continue with the context already available when possible.
+## Writing
 
-## Operational limits
+`add_capture` files a record and answers one upload URL per declared payload (`{name, mimeType, size, role}`); PUT the bytes with exactly the listed `Content-Type` and `Content-Length` within 15 minutes. `move_items` and `trash_items` follow the app's rules; nothing deletes for good.
 
-General MCP payload ingress and egress is limited to 8 MB. `capture_read` returns at most three images. For larger or complete capture sets, use `capture_export` and work from the exported files.
+## Limits
 
-If all tool calls fail authentication, ask the user to open Bowerbirds and sign in. Do not request, print, or expose Keychain credentials.
+You cannot read the Trash, read another workspace, mint credentials, or reach a Bucket that takes submissions through a publishable web key only. Report a refusal rather than retrying it. If every call fails authentication, ask the person to connect again; never ask for or print a token.

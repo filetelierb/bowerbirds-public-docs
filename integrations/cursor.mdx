@@ -1,6 +1,6 @@
 ---
 title: "Cursor"
-description: "Connect a Cursor project to the local Bowerbirds MCP server."
+description: "Connect a Cursor project to the Bowerbirds remote MCP door."
 icon: "code"
 ---
 
@@ -10,15 +10,12 @@ Create `.cursor/mcp.json` in a project for project-scoped access, or use `~/.cur
 {
   "mcpServers": {
     "bowerbirds": {
-      "command": "/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds",
-      "args": ["mcp"]
+      "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp"
     }
   }
 }
 ```
 
-Restart Cursor or run **Developer: Reload Window**, then confirm that the Bowerbirds server and tools are enabled in MCP settings.
-
-For an approved remote connection, use the endpoint and credential supplied by your Bowerbirds workspace administrator. Keep the credential out of project files and source control.
+Restart Cursor or run **Developer: Reload Window**, then confirm that the Bowerbirds server is enabled in MCP settings. Cursor opens the approval page in your browser when it first connects.
 
 See Cursor's [MCP documentation](https://cursor.com/docs/mcp) for client-level settings and diagnostics.

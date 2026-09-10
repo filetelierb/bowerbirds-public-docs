@@ -4,15 +4,15 @@ description: "Create a Bucket, add context, and connect your first AI client."
 icon: "rocket"
 ---
 
-This walkthrough creates one local Bucket, adds a note, and connects an AI client over MCP.
+This walkthrough creates one local Bucket, adds a note, syncs it, and connects an AI client over MCP.
 
 <Info>
-  Bowerbirds currently supports macOS 14 or later. The iOS app captures and reviews context, but the local CLI and MCP server run on Mac.
+  Bowerbirds currently supports macOS 14 or later. The iOS app captures and reviews context, but the CLI runs on Mac.
 </Info>
 
 <Steps>
   <Step title="Locate the Bowerbirds CLI">
-    The macOS app includes the CLI used by scripts and local MCP clients:
+    The macOS app includes the CLI used by scripts:
 
     ```sh
     export BOWERBIRDS_CLI='/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds'
@@ -22,7 +22,7 @@ This walkthrough creates one local Bucket, adds a note, and connects an AI clien
     If you installed the app elsewhere, update the path.
   </Step>
   <Step title="Sign in">
-    Sign in once before using authenticated CLI and MCP features.
+    Sign in once before using authenticated cloud commands.
 
     ```sh
     "$BOWERBIRDS_CLI" cloud login
@@ -58,27 +58,34 @@ This walkthrough creates one local Bucket, adds a note, and connects an AI clien
     "$BOWERBIRDS_CLI" bucket show payments-bug --json
     ```
   </Step>
+  <Step title="Sync the Bucket">
+    Agents work with cloud records, so push the Bucket:
+
+    ```sh
+    "$BOWERBIRDS_CLI" cloud push payments-bug
+    ```
+  </Step>
   <Step title="Connect an MCP client">
     Pick your client. This Claude Code command is the shortest path:
 
     ```sh
-    claude mcp add bowerbirds -- \
-      "$BOWERBIRDS_CLI" mcp
+    claude mcp add --transport http bowerbirds \
+      https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
     ```
 
-    For ChatGPT/Codex, Cursor, Antigravity, or the installable Claude Code plugin, open [Client integrations](/integrations/overview).
+    For ChatGPT/Codex, Cursor, Antigravity, or the plugins, open [Client integrations](/integrations/overview).
   </Step>
   <Step title="Run the smoke test">
     Restart the client if it was already open, then ask:
 
-    > Use Bowerbirds. Call `get_server_info`, list my Buckets, and summarize the records in `payments-bug`. Do not change anything.
+    > Use Bowerbirds. List the records in my `payments-bug` Bucket and summarize them. Do not change anything.
 
-    A working connection calls `get_server_info`, `list_buckets`, and `get_bucket`. It should find the note and image you added.
+    The first call opens the approval page in your browser: sign in, pick the workspace and the `read` role, and approve. A working connection calls `list_items` and `get_capture` and finds the note and image you added.
   </Step>
 </Steps>
 
 <Note>
-  Keep Bowerbirds installed for capture, review, and other interactive actions. CLI and MCP clients operate only within the permissions granted to them.
+  Keep Bowerbirds installed for capture, review, and other interactive actions. An agent acts with the role you approved, never as you, and you can revoke it from Settings → Developer Tools.
 </Note>
 
 ## Next steps
@@ -87,8 +94,8 @@ This walkthrough creates one local Bucket, adds a note, and connects an AI clien
   <Card title="CLI workflows" icon="terminal" href="/cli/local-workflows">
     Import files, manage payloads, and export portable folders.
   </Card>
-  <Card title="Local MCP setup" icon="plug" href="/mcp/local-server">
-    Connect Codex, Claude Code, or another stdio MCP client.
+  <Card title="Connect a client" icon="plug" href="/mcp/remote-server">
+    Connect Codex, Claude Code, Cursor, or another MCP client.
   </Card>
   <Card title="Client integrations" icon="puzzle-piece" href="/integrations/overview">
     Copy the configuration for your AI client.

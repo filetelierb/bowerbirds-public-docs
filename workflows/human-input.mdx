@@ -4,11 +4,15 @@ description: "Ask a person for structured input or a one-time capture during an 
 icon: "person-circle-question"
 ---
 
-The local MCP server gives agents two explicit ways to pause for a person: a structured request for input and a one-time capture authorization.
+Agents do not capture anything and do not drive the app. Two explicit mechanisms let a person answer an agent: a structured request for input raised during cloud processing, and a capture the person takes themselves and files where the agent will find it.
+
+<Note>
+  The `request_input`, `await_response` and `request_capture_authorization` tools belonged to the retired local MCP server. A remote agent asks for evidence in the record it files, and the person captures it in the app.
+</Note>
 
 ## Structured request
 
-`request_input` creates an `rfi` record in a filed Bucket. Fields can use these kinds:
+Cloud processing raises an `rfi` record in a filed Bucket when it needs a decision. Fields can use these kinds:
 
 - `select`
 - `text`
@@ -35,21 +39,19 @@ The local MCP server gives agents two explicit ways to pause for a person: a str
 }
 ```
 
-Call `await_response` with the returned `rfiId`. It returns when the request is answered, declined, expired, cancelled, or the call timeout is reached.
+The person answers in the app, or from the CLI:
 
-## One-time screen capture
+```sh
+bowerbirds cloud rfis list --state open
+bowerbirds cloud rfis answer <rfi-id> "Use the production workspace"
+```
 
-`request_capture_authorization` creates a visible request and local notification. It does not return screen pixels.
+Processing resumes after the answer is filed.
 
-On **Approve once**, Bowerbirds:
+## A capture the agent asked for
 
-1. hides its Library;
-2. captures the target the person prepared;
-3. opens the standard annotation editor;
-4. saves only when the person completes the editor.
-
-Pass `packageItemId` to route the approved capture into an existing Package. After `await_response` reports approval, poll `get_package` until the new scene appears because the editor save is still user-controlled.
+An agent that needs to see something files a note saying what and where (`add_capture` with `kind: note`). The person captures it in the Bowerbirds app, annotates it, and files it into the same Bucket; the agent finds it on its next `list_items` with `signed: false` and signs it once handled.
 
 <Warning>
-  This is not general UI automation. The local MCP server cannot observe the live Bowerbirds window, click controls, scroll, or enter text.
+  This is not UI automation. No agent can observe the live Bowerbirds window, capture the screen, click controls, scroll, or enter text.
 </Warning>
