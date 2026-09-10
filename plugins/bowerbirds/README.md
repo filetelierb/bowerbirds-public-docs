@@ -8,6 +8,6 @@ This package connects supported AI clients to the local MCP server bundled with 
 - Bowerbirds at `/Applications/Bowerbirds.app`, or `BOWERBIRDS_CLI` set before the client starts
 - a Bowerbirds cloud session created in the app or with `bowerbirds cloud login`
 
-The package includes manifests for Claude Code, Codex, and Cursor. See the [public integration guides](https://github.com/filetelierb/bowerbirds-public-docs/tree/main/integrations) for installation and MCP-only alternatives.
+The package includes manifests for Claude Code, Codex, and Cursor. Public installation instructions should be published only after the corresponding marketplace package is available.
 
 The local MCP server cannot enumerate private Unsorted content or capture the screen without an explicit, visible user authorization flow.

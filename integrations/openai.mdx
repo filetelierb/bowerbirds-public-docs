@@ -1,22 +1,20 @@
 ---
 title: "ChatGPT and Codex"
-description: "Connect Bowerbirds to the ChatGPT desktop app or Codex, and track public ChatGPT plugin readiness."
+description: "Connect a supported OpenAI desktop client or Codex to Bowerbirds."
 icon: "message"
 ---
 
-## ChatGPT desktop app
+## ChatGPT desktop
 
-Open **Settings → MCP servers → Add server**, choose **STDIO**, and enter:
+In the desktop app's MCP settings, add a local stdio server named `bowerbirds` with:
 
 ```text
 /Applications/Bowerbirds.app/Contents/Helpers/bowerbirds mcp
 ```
 
-Save, restart the client, then type `/mcp` to confirm that `bowerbirds` is connected. The ChatGPT desktop app, Codex CLI, and Codex IDE extension share the same host configuration.
+Save the configuration and restart the client if needed.
 
 ## Codex CLI
-
-Add the local server:
 
 ```sh
 codex mcp add bowerbirds -- \
@@ -24,38 +22,12 @@ codex mcp add bowerbirds -- \
 codex mcp list
 ```
 
-Or add the repository marketplace after cloning this repository:
+## Verify
 
-```sh
-codex plugin marketplace add "$PWD"
-```
+Ask the client to call `get_server_info` and `list_buckets` without making changes.
 
-Then install **Bowerbirds** from the Codex plugin directory.
+<Note>
+  A public ChatGPT web integration is not currently available. Use a supported desktop MCP client, or an approved remote connection supplied by your Bowerbirds workspace administrator.
+</Note>
 
-For remote HTTP, keep the token outside `config.toml`:
-
-```toml
-[mcp_servers.bowerbirds_cloud]
-url = "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp"
-bearer_token_env_var = "BOWERBIRDS_AGENT_TOKEN"
-```
-
-## ChatGPT web plugin
-
-ChatGPT web uses hosted plugins backed by remote MCP servers; it cannot use the local Bowerbirds executable. Bowerbirds already has the required remote MCP endpoint, bucket-scoped tools, and role model.
-
-<Warning>
-  The public plugin is not ready to submit. Authenticated ChatGPT plugins are expected to implement MCP OAuth 2.1. Bowerbirds Cloud currently accepts a pre-issued `bbt_` bearer token and has no authorization flow or self-service token screen.
-</Warning>
-
-The remaining launch work is:
-
-1. Add OAuth 2.1 authorization-server metadata and protected-resource metadata.
-2. Exchange a signed-in Bowerbirds user grant for a bucket-scoped access token.
-3. Add a consent screen for Bucket, role, and agent label.
-4. Test the hosted plugin in ChatGPT developer mode.
-5. Submit it to the public plugin directory after privacy and tool-metadata review.
-
-Until then, use the ChatGPT desktop app locally or another client that accepts an explicit bearer token remotely.
-
-See the official OpenAI documentation for [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp?surface=cli), [plugin quickstart](https://developers.openai.com/plugins/quickstart), and [plugin authentication](https://developers.openai.com/plugins/build/auth).
+See the official OpenAI documentation for [Codex MCP configuration](https://learn.chatgpt.com/docs/extend/mcp?surface=cli).

@@ -12,14 +12,11 @@ Recording and processing are separate actions. Bowerbirds first files the select
 flowchart LR
   S[Microphone / device audio / screen] --> R[Filed recording]
   R --> T{Choose a template}
-  T --> C[Cloud transcription or analysis]
-  T --> D[Device-only frame selection]
-  C --> O[Derived outputs]
-  D --> O
+  T --> O[Derived outputs]
   O --> R
 ```
 
-Recording supports every non-empty combination of microphone, device audio, and screen—seven combinations in total. A recording can therefore be audio-only, screen-only, or a combined walkthrough. Mixed audio used for transcription is preserved as `transcription-audio`; when both audio sources are selected, the separate microphone and device tracks are also available.
+Recording can use microphone, device audio, screen, or a supported combination. A recording can therefore be audio-only, screen-only, or a combined walkthrough.
 
 ## Template outputs
 
@@ -35,7 +32,7 @@ One template can request one or more outputs:
 
 Bundled templates are **Transcript**, **Meeting notes**, **1:1**, **Stand-up**, **Walkthrough guide**, and **Bug report**. Workspace templates can be edited, removed, restored, or created to combine outputs differently.
 
-Processing that needs transcription or model analysis becomes a cloud recording job and can be followed from the app or CLI. Only the selected JPEG frames are uploaded for visual analysis; video decoding and altered-video rendering happen on the device.
+Start processing from the app or CLI and follow its progress there.
 
 ```sh
 bowerbirds cloud recording process <bucket-slug> <item-id> \
@@ -46,8 +43,4 @@ bowerbirds cloud recording process <bucket-slug> <item-id> \
 
 ## Quick Blink
 
-Quick Blink is a separate, device-only post-processing path for screen recordings. Choose a span from the recording detail, compare its frames, review the frames around visual changes, and save them as a Package. Sampling targets 30 fps and is capped at 450 frames. Quick Blink uses no AI and sends nothing off the device.
-
-<Warning>
-  The local MCP tools named `enqueue_video_processing`, `poll_video_processing`, and `update_video_processing` expose the local durable job API for worker integrations. They are not the same interface as the app's current cloud recording-template flow.
-</Warning>
+Quick Blink is a device-only post-processing path for screen recordings. Choose a span from the recording detail, review frames around visual changes, and save the selected frames as a Package. Quick Blink uses no AI and sends nothing off the device.

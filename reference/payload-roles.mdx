@@ -1,69 +1,24 @@
 ---
-title: "Payload roles"
-description: "Interpret attached files by semantic role instead of filename."
-icon: "tags"
+title: "Working with record files"
+description: "List, choose, and fetch the files attached to a Bowerbirds record."
+icon: "file"
 ---
 
-A payload's filename is a transport detail. Its `role` tells apps, agents, and exporters what the bytes mean.
+A record can contain multiple files, such as an original screenshot, an annotated image, audio, video, or a document.
 
-## Common roles
+## List before fetching
 
-| Role | Meaning |
-| --- | --- |
-| `original` | Untouched source image |
-| `annotated` | Flattened capture used for display and export |
-| `capture-session` | Editable annotation state in JSON |
-| `primary` | Main or legacy attachment when no narrower role exists |
-| `recording` | Screen/video recording |
-| `transcription-audio` | Mixed or primary audio segmented for transcription |
-| `microphone-audio` | Separate microphone track when both audio sources are recorded |
-| `device-audio` | Separate device/system-audio track |
-| `analysis-frame` | Frame extracted for analysis |
-| `altered-video` | Device-rendered recording with derived annotations or captions |
-| `frame-annotation` | Structured annotation for a recording frame |
-| `filled-forms` | Answers attached from one or more capture Forms |
-| `capture-provenance` | Optional device capture context, subject to privacy controls |
-| `package-document` | Portable `package.json` document |
-| `package-scene` | Image used as a Package scene |
-| `agent-notes` | Notes produced by an agent/worker |
-| `agent-annotations` | Structured annotations produced by an agent/worker |
-| `agent-job` | Durable processing-job metadata |
+Use `list_item_files` or `bowerbirds item files` before requesting a file. Keep the exact file name returned by Bowerbirds rather than guessing it.
 
-The exact set grows as new processors add artifacts. Unknown roles should remain accessible as files even when a client has no specialized rendering.
-
-## Capture example
-
-```json
-[
-  {
-    "name": "raw.png",
-    "mimeType": "image/png",
-    "role": "original",
-    "bytes": 1420031
-  },
-  {
-    "name": "annotated.png",
-    "mimeType": "image/png",
-    "role": "annotated",
-    "bytes": 1502844
-  },
-  {
-    "name": "session.json",
-    "mimeType": "application/json",
-    "role": "capture-session",
-    "bytes": 4821
-  }
-]
+```sh
+bowerbirds item files research <record-id> --json
+bowerbirds item fetch research <record-id> <file-name> --out ./download
 ```
 
-## Reader rules
+## Choose by purpose
 
-1. Select by `role` when the operation cares about meaning.
-2. Keep the exact `name` for later fetches and Package references.
-3. Respect `mimeType` when decoding or displaying bytes.
-4. Preserve unknown payloads during copy/export.
-5. Do not assume the original and annotated images share an extension.
+When the response includes a semantic role, use it to choose the file that matches the task—for example, the original capture, the reviewed annotated image, or the primary recording. Preserve files with unfamiliar roles when copying or exporting a record.
 
-<Note>
-  Older payloads may use `primary`. Clients should continue to expose them rather than treating an unfamiliar or broad role as missing data.
-</Note>
+## Large files
+
+For large or complete capture sets, prefer CLI export or the local MCP filesystem tools instead of moving file bytes through model context.

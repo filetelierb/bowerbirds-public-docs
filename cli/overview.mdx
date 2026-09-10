@@ -6,36 +6,20 @@ icon: "terminal"
 
 The `bowerbirds` CLI shares the app's local store and also provides explicit authenticated cloud commands.
 
-## Get the executable
+## Locate the executable
 
-<Tabs>
-  <Tab title="Development build">
-    ```sh
-    git clone https://github.com/filetelierb/bowerbirds.git
-    cd bowerbirds
-    swift build --product bowerbirds
-    .build/debug/bowerbirds server info
-    ```
-  </Tab>
-  <Tab title="App bundle">
-    A packaged app places the current CLI in `Contents/Helpers/bowerbirds`.
+The macOS app includes the CLI at:
 
-    ```sh
-    '/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds' server info
-    ```
+```sh
+'/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds' server info
+```
 
-    Add a symlink or shell alias if you want to invoke it as `bowerbirds` from anywhere.
-  </Tab>
-</Tabs>
-
-<Note>
-  `trove` remains a compatibility executable and may appear in older shell history or MCP registrations. Prefer `bowerbirds` for new automation.
-</Note>
+Add a shell alias if you want to invoke it as `bowerbirds` from anywhere.
 
 ## Local versus cloud
 
 ```sh
-# Local SQLite and payload store
+# Local Buckets
 bowerbirds buckets --json
 bowerbirds bucket show research --json
 
@@ -45,8 +29,6 @@ bowerbirds cloud whoami
 bowerbirds cloud buckets list
 ```
 
-`BOWERBIRDS_CLOUD_URL` overrides the default cloud endpoint for development or self-hosted testing.
-
 ## Machine-readable output
 
 Add `--json` to supported commands. JSON mode is the recommended contract for scripts; human output is intentionally optimized for the terminal and may include guidance text.
@@ -55,11 +37,9 @@ Add `--json` to supported commands. JSON mode is the recommended contract for sc
 bowerbirds item show research 01J... --json | jq '.item.title'
 ```
 
-## JSON and exit caveats
+## JSON output
 
-JSON support is broad, not universal. `bucket export`, the `--cloud` aliases, several account/admin commands, and `cloud share` remain human text. `cloud login --json` prints interactive prose before its final receipt, and `--follow --json` emits newline-delimited events.
-
-Most runtime failures are written to standard error with a non-zero exit code. Some incomplete local command forms still print the usage block and exit successfully, so automation should validate required arguments before invocation.
+Use `--json` only on commands that advertise it in `bowerbirds help`. Commands that follow long-running work may emit newline-delimited JSON events instead of one document.
 
 <CardGroup cols={2}>
   <Card title="Local workflows" icon="hard-drive" href="/cli/local-workflows">

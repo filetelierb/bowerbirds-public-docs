@@ -6,7 +6,6 @@
     "name": "Bowerbirds"
   },
   "homepage": "https://bowerbirds.app",
-  "repository": "https://github.com/filetelierb/bowerbirds-public-docs",
   "keywords": ["bowerbirds", "mcp", "context", "capture"],
   "skills": "./skills/",
   "mcpServers": "./mcp.json"

@@ -18,8 +18,8 @@ A Package is an ordered, portable view over existing context. Use one for a hand
   <Step title="Resolve payload names">
     Call `list_item_files` for each source. Keep the returned record ID and exact payload name; do not guess `image.png` or `annotated.png`.
   </Step>
-  <Step title="Build and validate the document">
-    Construct Package v2 JSON with ordered `entries` and `scenes`, then call `validate_package` with `packageJSON`. Resolve missing assets and malformed geometry before saving.
+  <Step title="Build and validate the Package">
+    Follow the Package-authoring resource exposed by the local MCP server, then call `validate_package` before saving. Resolve missing assets and validation errors first.
   </Step>
   <Step title="Save and verify">
     Call `upsert_package` without `itemId` to create. Then call `get_package` and confirm scene, entry, annotation, and resolved-asset counts. `valid: false` means the draft was saved, not completed.
@@ -29,20 +29,4 @@ A Package is an ordered, portable view over existing context. Use one for a hand
   </Step>
 </Steps>
 
-## Coordinate system
-
-`rect`, `from`, `to`, and drawing `points` use normalized coordinates from `0` to `1`, relative to the source image.
-
-```json
-{
-  "kind": "spotlight",
-  "rect": { "x": 0.62, "y": 0.12, "width": 0.25, "height": 0.08 },
-  "text": "Choose the active Bucket"
-}
-```
-
-`spotlight` is the focus-region primitive. A non-empty `text` adds its visible legend.
-
-<Card title="Complete Package example" icon="code" href="/reference/package-v2">
-  Copy a valid schema-v2 document and review each field.
-</Card>
+The MCP authoring resource is the source of truth for the Package format supported by the installed Bowerbirds version. This keeps agents aligned with the app they are actually connected to.

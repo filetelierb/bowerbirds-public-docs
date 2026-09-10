@@ -40,13 +40,13 @@ Wildcard subdomains can be configured deliberately. Keep the allowlist as narrow
 
 ## Visitor attribution
 
-The service generates record IDs so one visitor cannot choose an ID that overwrites another visitor's capture. Visitor writes are attributed as web/visitor activity without pretending the system knows the person's identity.
+Visitor submissions are attributed as web activity and do not imply a verified personal identity.
 
 ## Optional Triage
 
 An administrator can enable server-side classification for one intake, choose `auto`, `suggest`, or `both`, attach workspace skills, allowlist destinations, and set a fallback.
 
-Because a public page lets a stranger trigger billed classification, an enabled Web Capture intake requires a monthly classification ceiling. Work is queued asynchronously; if the queue is unavailable or full, the capture remains safely stored in the intake but may remain unclassified.
+Classification settings are controlled by a workspace administrator. A submitted capture remains in its intake until the selected policy routes it or a person files it.
 
 <Warning>
   A Web Capture intake is a source, not a normal filing destination. Native apps and agent tokens cannot use it as a general-purpose write target.

@@ -1,41 +1,35 @@
 ---
 title: "Troubleshooting"
-description: "Diagnose missing records, stale tools, auth failures, payload limits, and sync surprises."
+description: "Resolve common CLI, MCP, authentication, and sync problems."
 icon: "wrench"
 ---
 
 <AccordionGroup>
-  <Accordion title="My local MCP client shows no tools or every tool call is refused">
-    Run `bowerbirds cloud login` with the same executable. The server can initialize and list definitions while signed out, but all `tools/call` operations require the shared Keychain session.
+  <Accordion title="My local MCP client shows no tools or calls fail authentication">
+    Run `bowerbirds cloud login` using the same executable configured in the MCP client, then restart the client.
   </Accordion>
   <Accordion title="The MCP tools look older than the app">
-    Call `get_server_info` and inspect `executablePath`, version, store schema, and capabilities. Update the client registration to `/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds`, then restart the client so it replaces the cached process.
-  </Accordion>
-  <Accordion title="The CLI and app see different Buckets">
-    Compare the store path from `bowerbirds server info --json`. `BOWERBIRDS_STORE_ROOT` wins over legacy `TROVE_STORE_ROOT`, which wins over the normal Application Support path.
+    Call `get_server_info` and check the reported Bowerbirds version. Point the client to `/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds`, then restart it.
   </Accordion>
   <Accordion title="A record exists in the app but not in CLI or MCP">
-    It may be in private Unsorted. File it into a Bucket or directory first. Agent doors and exports intentionally exclude Unsorted.
+    It may still be in private Unsorted. File it into a Bucket or directory first.
   </Accordion>
-  <Accordion title="get_item_payload says the file is too large">
-    Local MCP caps ordinary payload transfer at 8 MB. Use `bowerbirds item fetch`, `bowerbirds capture export`, or `import_local_file` so bytes travel through the filesystem instead of model context.
-  </Accordion>
-  <Accordion title="capture_read omitted an image">
-    The call returns at most three images and may downscale large images. Use `capture_export` for the complete on-disk bundle.
+  <Accordion title="A payload is too large for the MCP response">
+    Use `bowerbirds item fetch`, `bowerbirds capture export`, or `import_local_file` so the file moves through the filesystem instead of the model context.
   </Accordion>
   <Accordion title="A Scratchpad update conflicts">
-    Another writer advanced the revision. Call `get_scratchpad` again, reconcile with the latest content, and retry using its revision as `expectedRevision`.
+    Another writer changed it first. Call `get_scratchpad` again, reconcile with the latest content, and retry with the returned revision.
   </Accordion>
-  <Accordion title="My remote MCP token authenticates but a read is refused">
-    Content reads also follow the Bucket owner's plan/content gate. Confirm the token has not been revoked and ask the owner to check the workspace entitlement.
+  <Accordion title="A remote connection cannot read or write">
+    Confirm that the credential is still active and has the required role on the intended Bucket. Ask the workspace administrator to replace it if necessary.
   </Accordion>
-  <Accordion title="A remote MCP payload URL returns 401 or 403">
-    Re-send the same `Authorization: Bearer bbt_...` header used for `/mcp`. Payload URLs are authenticated service URLs, not public or pre-signed links.
+  <Accordion title="A remote file download is refused">
+    Make sure the client sends the same authorization credential when fetching the authenticated download URL.
   </Accordion>
-  <Accordion title="I trashed a local record but it remains in cloud">
-    Current pull is additive and local trash is not bidirectional tombstone sync. Delete/trash the cloud record through the cloud commands as well.
+  <Accordion title="I trashed a local record but still see a cloud copy">
+    Local and cloud removal are separate actions. Remove the cloud record explicitly if it should no longer be shared.
   </Accordion>
-  <Accordion title="--json did not produce one JSON document">
-    Not every command supports JSON. Interactive login prints prose, and follow modes emit newline-delimited JSON events. See [CLI overview](/cli/overview#json-and-exit-caveats).
+  <Accordion title="A command did not return one JSON document">
+    Check `bowerbirds <command> --help` for JSON support. Commands that follow ongoing work may emit newline-delimited JSON events.
   </Accordion>
 </AccordionGroup>

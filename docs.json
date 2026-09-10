@@ -125,7 +125,6 @@
             "pages": [
               "mcp/local-tools",
               "mcp/remote-tools",
-              "reference/package-v2",
               "reference/troubleshooting"
             ]
           }
@@ -138,11 +137,6 @@
           "anchor": "Bowerbirds app",
           "href": "https://bowerbirds.app",
           "icon": "bird"
-        },
-        {
-          "anchor": "GitHub",
-          "href": "https://github.com/filetelierb/bowerbirds",
-          "icon": "github"
         }
       ]
     }
@@ -152,21 +146,12 @@
       {
         "label": "Bowerbirds app",
         "href": "https://bowerbirds.app"
-      },
-      {
-        "label": "GitHub",
-        "href": "https://github.com/filetelierb/bowerbirds"
       }
     ],
     "primary": {
       "type": "button",
       "label": "Quickstart",
       "href": "/quickstart"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/filetelierb/bowerbirds"
     }
   },
   "contextual": {

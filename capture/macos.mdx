@@ -27,7 +27,7 @@ The trigger can be changed to a right-side modifier or modifier chord in Capture
 | Vision | Region-based visual conversation; copied answers can be filed |
 | Recording | Any non-empty combination of microphone, device audio, and screen |
 
-Recording replaces the former separate meeting and video modes. Its three source switches make seven valid combinations, from microphone-only through microphone + device audio + screen. Screen recordings use the native macOS content picker. Audio and video are filed first; notes, transcripts, Packages, and altered recordings are explicit later outputs.
+Recording can combine microphone, device audio, and screen. Screen recordings use the native macOS content picker. Notes, transcripts, Packages, and altered recordings are optional later outputs.
 
 <Note>
   A failed Dictation keeps its exact audio locally for 72 hours so it can be retried or discarded. A successful Dictation is pasted or otherwise delivered and is not saved as a Bowerbirds record.
@@ -35,7 +35,7 @@ Recording replaces the former separate meeting and video modes. Its three source
 
 ## Quick Blink
 
-Quick Blink is a post-processing action on a filed screen recording, not a sixth capture mode. Open a recording, choose a span, and Bowerbirds samples it at 30 fps, compares adjacent frames locally, and offers frames around visual changes. The review is capped at 450 sampled frames; no AI is used and nothing leaves the device. Saving creates a separate Package and leaves the recording untouched.
+Quick Blink is a post-processing action on a filed screen recording, not a sixth capture mode. Open a recording, choose a span, and review frames around visual changes. No AI is used and nothing leaves the device. Saving creates a separate Package and leaves the recording untouched.
 
 ## Fixed shortcuts
 

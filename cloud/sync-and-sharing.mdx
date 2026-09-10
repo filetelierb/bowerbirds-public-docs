@@ -15,8 +15,6 @@ bowerbirds cloud orgs list
 bowerbirds cloud orgs use <workspace-id-or-slug>
 ```
 
-The CLI uses a magic link and a one-shot localhost callback. Session refresh credentials are stored in the system Keychain; cloud requests send a short-lived Firebase ID token.
-
 ## Push and pull
 
 ```sh
@@ -30,7 +28,7 @@ bowerbirds cloud pull me/research --as research-copy
 bowerbirds cloud sync research on
 ```
 
-Push is incremental and idempotent. Pull is additive: records with cloud IDs already present locally are skipped.
+Push sends local changes for the selected Bucket. Pull adds cloud records that are not already present locally.
 
 <Warning>
   Local deletion is not currently bidirectional tombstone sync. Trashing a local record does not retract a cloud copy that was pushed earlier. Use cloud record/Bucket deletion commands for the cloud object.
@@ -54,12 +52,6 @@ If the email does not yet belong to an account, the grant waits and is claimed a
 | `contribute` | ✓ | ✓ | — |
 | `admin` | ✓ | ✓ | ✓ |
 | owner | ✓ | ✓ | ✓, plus Bucket ownership operations |
-
-Workspace membership places a minimum role on workspace-owned Buckets: owners map to owner, workspace admins to Bucket admin, and members to contribute. A per-Bucket grant can raise this floor, not lower it.
-
-## Free cloud limits
-
-The current server permits cloud push and pull on every tier. The free plan includes 1 GB of storage, retains content for 15 days, and allows 100 new records per month rather than applying a blanket “Pro required” gate. Client copy in some builds may still describe the older gate.
 
 <Note>
   Add `--org <id-or-slug>` to cloud commands when automation must target a workspace without changing the device's active selection.

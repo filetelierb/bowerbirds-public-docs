@@ -8,7 +8,7 @@ Bowerbirds is a local-first context workspace for people and AI agents. It turns
 
 <CardGroup cols={2}>
   <Card title="Start with the CLI" icon="terminal" href="/cli/overview">
-    Read and write the same local store as the macOS app, with JSON receipts for automation.
+    Work with the same local library as the macOS app, with JSON output for automation.
   </Card>
   <Card title="Connect an agent" icon="plug" href="/mcp/overview">
     Use the local stdio server or a bucket-scoped remote MCP connection.
@@ -53,7 +53,3 @@ flowchart LR
 | Local MCP | Rich agent workflows over the local store | Filed local Buckets only |
 | Remote MCP | Giving an external agent access to one shared Bucket | Exactly one cloud Bucket and one role |
 | Web Capture | Collecting annotated reports from a website visitor | Write-only publishable key |
-
-<Note>
-  Older builds and paths may still use the command name `trove`. It is a compatibility alias; new integrations should use `bowerbirds`.
-</Note>

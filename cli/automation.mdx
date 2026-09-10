@@ -16,9 +16,7 @@ item_json=$(bowerbirds import "$bucket_slug" ./test-results/screenshot.png \
 item_id=$(printf '%s' "$item_json" | jq -r '.id')
 ```
 
-Field envelopes differ by command, and a few counts are encoded as strings. Inspect one real receipt before freezing a script around it.
-
-`cloud login --json` is interactive rather than clean JSON. Commands run with `--follow --json` produce newline-delimited event objects rather than one JSON document.
+Inspect one real receipt before relying on its fields. Commands run with `--follow --json` may produce newline-delimited event objects rather than one JSON document.
 
 ## Use local paths for binary handoff
 
@@ -32,21 +30,10 @@ Avoid base64 in shell arguments. `bowerbirds import` copies a readable path into
 - Treat a failed Package validation as an incomplete result even if the draft was saved.
 - Keep the returned item ID and payload name together.
 
-## Isolate tests
-
-Development and smoke tests can point Bowerbirds at a disposable store with `BOWERBIRDS_STORE_ROOT`:
-
-```sh
-store_root=$(mktemp -d)
-BOWERBIRDS_STORE_ROOT="$store_root" .build/debug/bowerbirds buckets --json
-```
-
-Do not aim tests at the user's normal application-support store.
-
 ## Check the executable first
 
 ```sh
 bowerbirds server info --json
 ```
 
-The receipt identifies the executable path, Bowerbirds version, store path, supported Package schemas, store schema, and capabilities. This is the fastest way to detect an old binary or a script pointed at the wrong store.
+Use the receipt to confirm the active Bowerbirds version and available capabilities before running an automation.

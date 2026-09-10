@@ -11,11 +11,9 @@ bowerbirds cloud login
 bowerbirds cloud whoami
 ```
 
-Login asks for an email, sends a magic link, and waits on a temporary localhost callback. The session is shared with cloud commands on that device.
+Login asks for an email and sends a sign-in link. The session is shared with cloud commands on that device.
 
 Use `bowerbirds cloud logout` to remove it.
-
-Set `BOWERBIRDS_CLOUD_URL` before the command to target a development endpoint. Although older CLI usage text mentions `cloud login --url`, that option is not currently applied by the login implementation.
 
 ## Workspaces
 

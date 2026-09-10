@@ -4,7 +4,7 @@ description: "Capture photos, screens, voice, notes, files, and shared content o
 icon: "mobile-screen"
 ---
 
-The iOS app uses the same Bucket, record, payload-role, form, annotation, and routing vocabulary as macOS. Its primary navigation has three tabs: **Buckets**, **Inbox**, and **Settings**.
+The iOS app uses the same Buckets, records, annotations, and routing concepts as macOS. Its primary navigation has three tabs: **Buckets**, **Inbox**, and **Settings**.
 
 ## Capture menu
 
@@ -21,26 +21,18 @@ The keyboard extension provides typing, Dictation, and a picker for recent recor
 
 ## Share extension
 
-The share extension accepts up to ten images in one handoff and can ingest text and images shared from Apple Notes. It stages the content in the App Group, then the main app drains that staging area into the selected location. If that Bucket disappeared before filing, the content falls back to private Unsorted.
+The share extension accepts up to ten images in one handoff and can ingest text and images shared from Apple Notes. Shared content is imported when Bowerbirds opens. If its selected destination is no longer available, the content remains private in Unsorted.
 
 ## Filing
 
-New captures are first written locally. Depending on the device routing setting, they either stay in private Unsorted or are filed to the shared Triage shelf and queued for background upload. A network failure must not block or discard the capture.
+Depending on the device routing setting, new captures either stay in private Unsorted or are filed to the shared Triage shelf. If Bowerbirds is offline, the capture remains available locally and can sync later.
 
 Quick Blink is available later from a filed recording. It compares a selected span locally and creates a Package from the reviewed frames; it is not an item in the capture menu.
 
 ## Editing parity
 
-An editable capture retains:
-
-- the original image;
-- the flattened annotated image;
-- the annotation session document;
-- numbered comment text;
-- optional attached Forms and answers.
-
-The session document makes visual marks selectable and re-editable instead of permanently baking every change into pixels.
+Captures can retain the original image, reviewed annotations, numbered comments, and optional Forms and answers. Visual marks remain editable in Bowerbirds.
 
 <Info>
-  iOS and macOS can present the same cloud record because payload meaning is carried by roles, not by platform-specific filenames.
+  Synced records can be reviewed from both iOS and macOS.
 </Info>

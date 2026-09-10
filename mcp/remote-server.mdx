@@ -1,47 +1,29 @@
 ---
-title: "Remote MCP server"
-description: "Connect an external agent to exactly one shared cloud Bucket."
+title: "Remote MCP connection"
+description: "Connect an approved hosted agent to one Bowerbirds Bucket."
 icon: "cloud"
 ---
 
-The remote server accepts JSON-RPC over HTTP `POST` at:
+Remote MCP is for hosted or off-device agents. A Bowerbirds workspace administrator supplies:
 
-```text
-https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
-```
-
-It currently negotiates MCP protocol version `2025-03-26`.
-
-## Before you connect
-
-You need a bucket-scoped agent token beginning with `bbt_`. A workspace administrator chooses:
-
-- the one Bucket the token opens;
-- a label used in attribution;
-- one role: `read`, `contribute`, or `admin`.
-
-The cleartext token is shown only when minted; the cloud stores its hash. Save it in a secret manager or the MCP client's protected configuration.
+- the HTTPS MCP endpoint;
+- a credential scoped to one Bucket;
+- either `read` or `contribute` access.
 
 <Warning>
-  Token provisioning is currently a cloud API capability rather than a `bowerbirds cloud` command. If you have not been given a `bbt_` token by the Bucket administrator, the remote quickstart cannot be completed yet. See [Agent tokens](/mcp/agent-tokens).
+  Do not use an infrastructure hostname or endpoint copied from development material. Use only the connection details supplied for your workspace.
 </Warning>
 
-## Connect with Claude Code
+## Configure an HTTP MCP client
 
-```sh
-claude mcp add --transport http bowerbirds \
-  https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp \
-  --header "Authorization: Bearer $BOWERBIRDS_AGENT_TOKEN"
-```
-
-Or use an environment-expanded project configuration:
+Use the values supplied by the administrator:
 
 ```json
 {
   "mcpServers": {
     "bowerbirds": {
       "type": "http",
-      "url": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp",
+      "url": "<BOWERBIRDS_MCP_URL>",
       "headers": {
         "Authorization": "Bearer ${BOWERBIRDS_AGENT_TOKEN}"
       }
@@ -50,44 +32,14 @@ Or use an environment-expanded project configuration:
 }
 ```
 
-## Verify with JSON-RPC
+Keep the credential in the client's secret storage or an environment variable rather than committing it with the configuration.
 
-```sh
-curl -sS https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp \
-  -H "Authorization: Bearer $BOWERBIRDS_AGENT_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "jsonrpc": "2.0",
-    "id": 1,
-    "method": "tools/list",
-    "params": {}
-  }'
-```
+## Verify the scope
 
-## Scope and roles
+After connecting, ask the client to list records without making changes. Confirm that it can see only the intended Bucket before enabling a write-capable workflow.
 
-| Role | List/read | Fetch payload URLs | Add a finding |
-| --- | :---: | :---: | :---: |
-| `read` | ✓ | ✓ | — |
-| `contribute` | ✓ | ✓ | ✓ |
-| `admin` | ✓ | ✓ | ✓ |
+## Fetching files
 
-The token cannot name another owner/slug to escape its Bucket. Revocation takes effect on the next request.
+Remote capture tools return file metadata and authenticated download URLs. Fetch only the payload you need and send the same authorization credential when the client requests it.
 
-<Warning>
-  Prefer `read` or `contribute`. The remote MCP tools gain nothing from `admin`, while the same token can carry broader Bucket-admin power at other cloud REST endpoints.
-</Warning>
-
-## Fetch a payload
-
-`get_capture` and `list_captures` return a manifest with payload `url`, `mimeType`, and `size`. Bytes are never inlined. Fetch one selected payload with the same bearer token:
-
-```sh
-curl -L "$PAYLOAD_URL" \
-  -H "Authorization: Bearer $BOWERBIRDS_AGENT_TOKEN" \
-  -o annotated.png
-```
-
-<Note>
-  Content reads follow the Bucket owner's plan entitlement. A token may authenticate correctly while a content read is refused by the owner's plan gate.
-</Note>
+See [Remote MCP tools](/mcp/remote-tools) for the supported tool surface.

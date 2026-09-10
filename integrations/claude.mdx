@@ -1,39 +1,21 @@
 ---
 title: "Claude Code and Claude Desktop"
-description: "Install the Bowerbirds Claude Code plugin or connect Claude Desktop over local MCP."
+description: "Connect Claude to the local MCP server included with Bowerbirds."
 icon: "robot"
 ---
 
-## Claude Code plugin
-
-The Bowerbirds repository includes a Claude Code marketplace package. In Claude Code, run:
-
-```text
-/plugin marketplace add filetelierb/bowerbirds-public-docs
-/plugin install bowerbirds@bowerbirds
-```
-
-Restart Claude Code after installation. The plugin finds the CLI at `/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds`. For a development build, launch Claude Code with `BOWERBIRDS_CLI` set to the executable path.
-
-The plugin bundles two things:
-
-- the local `bowerbirds mcp` connection;
-- agent guidance for navigating Buckets, payloads, Packages, and human-in-the-loop capture requests.
-
-## One-command setup
-
-If you do not want the plugin, add only the MCP server:
+## Claude Code
 
 ```sh
 claude mcp add bowerbirds -- \
   '/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds' mcp
 ```
 
-Inspect it with `claude mcp list`.
+Run `claude mcp list` to confirm the connection, then restart Claude Code if it was already open.
 
 ## Claude Desktop
 
-Add a local stdio server named `bowerbirds` with:
+Add a local stdio server named `bowerbirds`:
 
 ```json
 {
@@ -42,19 +24,12 @@ Add a local stdio server named `bowerbirds` with:
 }
 ```
 
-Restart Claude Desktop after saving the server. If your Claude Desktop build supports MCP extensions, the repository plugin is still intended for Claude Code; a signed `.dxt` package is not published yet.
+Restart Claude Desktop after saving the configuration.
 
-## Remote connection
+## Verify
 
-Claude Code can also reach one cloud Bucket:
+Ask Claude to call `get_server_info` and `list_buckets` without making changes.
 
-```sh
-export BOWERBIRDS_AGENT_TOKEN='bbt_...'
-claude mcp add --transport http bowerbirds-cloud \
-  https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp \
-  --header "Authorization: Bearer $BOWERBIRDS_AGENT_TOKEN"
-```
+For an approved remote connection, use the endpoint and credential supplied by your Bowerbirds workspace administrator. See [Remote MCP connection](/mcp/remote-server).
 
-See [Agent tokens](/mcp/agent-tokens) before sharing or rotating the secret.
-
-See Anthropic's [Claude Code plugin](https://code.claude.com/docs/en/plugins) and [MCP](https://code.claude.com/docs/en/mcp) documentation for client-level settings.
+See Anthropic's [MCP documentation](https://code.claude.com/docs/en/mcp) for client-level settings.

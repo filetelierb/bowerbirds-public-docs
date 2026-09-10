@@ -1,12 +1,10 @@
 ---
 title: "Antigravity"
-description: "Connect Google Antigravity IDE or CLI to Bowerbirds over local or remote MCP."
+description: "Connect Google Antigravity IDE or CLI to Bowerbirds over local MCP."
 icon: "satellite"
 ---
 
-Antigravity 2.0, the IDE, and Antigravity CLI read global MCP configuration from `~/.gemini/config/mcp_config.json`.
-
-## Local Bowerbirds
+Add Bowerbirds to Antigravity's MCP configuration:
 
 ```json
 {
@@ -19,27 +17,8 @@ Antigravity 2.0, the IDE, and Antigravity CLI read global MCP configuration from
 }
 ```
 
-## One cloud Bucket
+Restart Antigravity after saving the file, then inspect its MCP server list and ask it to call `get_server_info`.
 
-Antigravity's remote shape uses `serverUrl`:
+For an approved remote connection, use the endpoint and credential supplied by your Bowerbirds workspace administrator. Store the credential outside shared configuration and source control.
 
-```json
-{
-  "mcpServers": {
-    "bowerbirds-cloud": {
-      "serverUrl": "https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp",
-      "headers": {
-        "Authorization": "Bearer bbt_REPLACE_ME"
-      }
-    }
-  }
-}
-```
-
-<Warning>
-  This file contains the token in cleartext. Restrict its permissions, never commit it, and prefer the local connection when Antigravity runs on the same Mac. Rotate the token if the file is exposed.
-</Warning>
-
-Restart Antigravity after editing the file, then inspect the MCP server list and ask it to list the connected Bucket's captures.
-
-See Google's [Antigravity MCP setup](https://codelabs.developers.google.com/getting-started-google-antigravity) for client-level settings.
+See Google's [Antigravity MCP setup](https://codelabs.developers.google.com/getting-started-google-antigravity) for the current configuration location and client-level settings.

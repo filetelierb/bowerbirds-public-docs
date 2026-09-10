@@ -10,21 +10,19 @@ Routing chooses where a new capture is born. Classification is optional later wo
 
 ## Device routing
 
-When “Route new captures to Triage” is off, captures go to private Unsorted. When it is on, eligible captures are filed into the workspace's shared Triage shelf, added to the durable upload queue, and uploaded serially in the background. A successful upload removes the local queued copy; a failed upload remains queued for retry.
+When “Route new captures to Triage” is off, captures go to private Unsorted. When it is on, eligible captures are filed into the workspace's shared Triage shelf and synced when possible.
 
 The switch is per person and device, defaults to off, and affects future captures only. Enabling it warns that new eligible captures will enter a shared workspace location.
 
 Clipboard history is excluded from this switch because copying text is not explicit consent to publish it to a workspace.
 
-If the Triage location cannot be prepared—for example, while offline—the local capture falls back to Unsorted instead of being lost.
+If the shared destination is unavailable—for example, while offline—the capture remains private in Unsorted instead of being lost.
 
 ```mermaid
 flowchart TD
   N[New capture] --> S{Route to shared Triage?}
   S -->|No| U[Private Unsorted]
-  S -->|Yes| L[File locally in Triage]
-  L --> Q[Durable upload queue]
-  Q --> C[Shared cloud Triage]
+  S -->|Yes| C[Shared Triage]
   C --> P{Classification enabled?}
   P -->|No| W[Wait for human filing]
   P -->|Suggest| G[Record a suggested destination]
@@ -43,9 +41,7 @@ If no destination fits and no fallback exists, the record stays where it is.
 
 ## Web Capture triage
 
-Web Capture intake is a separate source. Its classification runs server-side because the submission is already in the cloud. Since a public widget lets a stranger cause a model call, enabling classification for an intake requires an administrator-defined monthly classification ceiling.
-
-The Web Capture classification queue is asynchronous but not durable. If a process restarts or the queue is full, the submitted capture remains safely stored in its intake, but it may remain unclassified until a later action retries it.
+Web Capture intake is a separate source. An administrator can apply the same destination policy to submitted reports while keeping intake separate from ordinary filing destinations.
 
 <Warning>
   Triage destinations stay inside the same workspace. Web Capture intakes and the Triage shelf itself cannot be selected as destinations.

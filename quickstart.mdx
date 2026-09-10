@@ -4,40 +4,25 @@ description: "Create a Bucket, add context, and connect your first AI client."
 icon: "rocket"
 ---
 
-This walkthrough creates one local Bucket, adds a note, and connects an AI client over MCP. Use a packaged app if you already have one, or build the public source.
+This walkthrough creates one local Bucket, adds a note, and connects an AI client over MCP.
 
 <Info>
   Bowerbirds currently supports macOS 14 or later. The iOS app captures and reviews context, but the local CLI and MCP server run on Mac.
 </Info>
 
 <Steps>
-  <Step title="Choose the Bowerbirds executable">
-    <Tabs>
-      <Tab title="Build the public source">
-        This path requires Xcode 16 or later.
+  <Step title="Locate the Bowerbirds CLI">
+    The macOS app includes the CLI used by scripts and local MCP clients:
 
-        ```sh
-        git clone https://github.com/filetelierb/bowerbirds.git
-        cd bowerbirds
-        swift build --product bowerbirds
-        export BOWERBIRDS_CLI="$PWD/.build/debug/bowerbirds"
-        "$BOWERBIRDS_CLI" server info
-        ```
-      </Tab>
-      <Tab title="Packaged app">
-        If you already have Bowerbirds in `/Applications`, use its bundled CLI:
+    ```sh
+    export BOWERBIRDS_CLI='/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds'
+    "$BOWERBIRDS_CLI" server info
+    ```
 
-        ```sh
-        export BOWERBIRDS_CLI='/Applications/Bowerbirds.app/Contents/Helpers/bowerbirds'
-        "$BOWERBIRDS_CLI" server info
-        ```
-
-        If the app lives somewhere else, update the path.
-      </Tab>
-    </Tabs>
+    If you installed the app elsewhere, update the path.
   </Step>
   <Step title="Sign in">
-    Local MCP tool calls use the Bowerbirds cloud session stored in Keychain, even when the records themselves are local.
+    Sign in once before using authenticated CLI and MCP features.
 
     ```sh
     "$BOWERBIRDS_CLI" cloud login
@@ -92,9 +77,9 @@ This walkthrough creates one local Bucket, adds a note, and connects an AI clien
   </Step>
 </Steps>
 
-<Warning>
-  The MCP server does not start the app. Screen capture, microphone access, annotation UI, and interactive AI features remain app-owned capabilities. Tool calls use the Bowerbirds session stored in Keychain.
-</Warning>
+<Note>
+  Keep Bowerbirds installed for capture, review, and other interactive actions. CLI and MCP clients operate only within the permissions granted to them.
+</Note>
 
 ## Next steps
 

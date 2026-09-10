@@ -1,60 +1,42 @@
 ---
 title: "Client integrations"
-description: "Choose the right Bowerbirds connection for Claude, ChatGPT, Codex, Cursor, Antigravity, and other MCP clients."
+description: "Connect Claude, ChatGPT, Codex, Cursor, Antigravity, and other MCP clients."
 icon: "puzzle-piece"
 ---
 
-Bowerbirds uses standard MCP, but clients package MCP connections differently. Start with the row that matches where your agent runs.
+Bowerbirds uses standard MCP. The supported public setup today is a local MCP connection to the CLI included with the macOS app.
 
-| Client | Best connection today | Install experience | Status |
-| --- | --- | --- | --- |
-| Claude Code | Local stdio | Bowerbirds plugin or one CLI command | Ready |
-| Claude Desktop | Local stdio | Desktop MCP configuration | Ready |
-| ChatGPT desktop / Codex | Local stdio | Shared MCP settings or Codex plugin | Ready |
-| Cursor | Local stdio; remote HTTP when needed | Bowerbirds plugin or `.cursor/mcp.json` | Ready |
-| Antigravity | Local stdio; remote HTTP when needed | `mcp_config.json` | Ready |
-| ChatGPT web | Remote HTTP plugin | Public plugin requires OAuth 2.1 | Blocked on cloud auth |
+| Client | Connection | Setup |
+| --- | --- | --- |
+| Claude Code | Local stdio | `claude mcp add` |
+| Claude Desktop | Local stdio | Desktop MCP configuration |
+| ChatGPT desktop / Codex | Local stdio | MCP settings or `codex mcp add` |
+| Cursor | Local stdio | `mcp.json` |
+| Antigravity | Local stdio | `mcp_config.json` |
 
-## Local or remote?
+<Info>
+  Marketplace plugins are not currently distributed publicly. Use the standard MCP setup in the client guides below.
+</Info>
 
-<CardGroup cols={2}>
-  <Card title="Local MCP" icon="laptop" href="/mcp/local-server">
-    Use on the Mac running Bowerbirds. It exposes rich read/write tools across filed local Buckets.
-  </Card>
-  <Card title="Remote MCP" icon="cloud" href="/mcp/remote-server">
-    Use from another machine or hosted agent. One `bbt_` token opens exactly one cloud Bucket.
-  </Card>
-</CardGroup>
+Approved hosted agents can also use remote MCP. Your workspace administrator must supply the endpoint and scoped credential; infrastructure URLs found elsewhere are not supported connection details.
 
-Local MCP is the best first experience. It can import local files, work with Packages and Scratchpads, and request human input. Remote MCP intentionally exposes only a small bucket-scoped surface.
-
-<Warning>
-  Two product gaps affect remote onboarding: the apps and CLI do not yet mint `bbt_` agent tokens, and Bowerbirds Cloud does not yet implement the OAuth 2.1 flow required for a public ChatGPT plugin. A Bucket administrator or backend operator must currently provision remote tokens.
-</Warning>
-
-## What “plugin” means here
-
-- **Claude Code, Codex, and Cursor:** this repository contains client manifests around one shared plugin with an MCP connection and Bowerbirds workflow guidance.
-- **Antigravity:** this client currently uses an MCP configuration file for Bowerbirds.
-- **ChatGPT web:** a public plugin is a hosted remote MCP integration submitted to the ChatGPT plugin directory. Bowerbirds needs OAuth before it can be submitted safely.
-
-## Verify any client
+## Verify any local client
 
 After connecting, ask the agent:
 
 > Call `get_server_info`, list my Bowerbirds Buckets, and tell me which tools you can use. Do not write or delete anything.
 
-If `get_server_info` is unavailable, the client is probably connected to the remote server. If every local tool reports an authentication error, open Bowerbirds and sign in again.
+If the tool list is missing, restart the client after saving its MCP configuration. If a record is missing, make sure it is filed into a Bucket rather than left in Unsorted.
 
 <CardGroup cols={2}>
   <Card title="Claude" icon="robot" href="/integrations/claude">
-    Install the Claude Code plugin or configure Claude Desktop.
+    Configure Claude Code or Claude Desktop.
   </Card>
   <Card title="ChatGPT and Codex" icon="message" href="/integrations/openai">
-    Connect the desktop app, Codex CLI, or understand web plugin readiness.
+    Configure the desktop app or Codex CLI.
   </Card>
   <Card title="Cursor" icon="code" href="/integrations/cursor">
-    Add a local or remote MCP server to a project.
+    Add Bowerbirds to a project or user MCP configuration.
   </Card>
   <Card title="Antigravity" icon="satellite" href="/integrations/antigravity">
     Configure Bowerbirds in the IDE or CLI.

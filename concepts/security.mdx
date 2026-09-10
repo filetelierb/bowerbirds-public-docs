@@ -1,42 +1,29 @@
 ---
-title: "Security and privacy"
-description: "The consent, scope, and credential boundaries behind each Bowerbirds door."
+title: "Privacy and permissions"
+description: "The user-visible boundaries for local data, capture, sharing, and integrations."
 icon: "shield-halved"
 ---
 
-Bowerbirds uses separate principals for people, agents, and public capture widgets. Their powers are intentionally not interchangeable.
+## Private by default
 
-## Boundaries that always apply
+- Content in **Unsorted** stays private to the device and is not exposed through MCP.
+- Cloud sync is enabled only for selected Buckets.
+- Normal removal sends records to recoverable Trash.
+- Original captures remain separate from annotations and other derived outputs.
 
-- **Unsorted stays device-private.** Neither local nor remote MCP can enumerate it.
-- **Capture is app-owned.** A headless client cannot silently inherit macOS screen or microphone permission.
-- **Agent writes are attributed.** Local MCP writes are stamped as MCP/agent activity; remote findings are stamped with the token label.
-- **Deletion is soft by default.** Normal remove and trash operations remain recoverable.
-- **Original evidence stays separate.** Annotation and Package generation preserve source records and original payloads.
-- **Capture provenance is opt-in per device.** Disabling it does not remove older local provenance, but prevents that payload from being uploaded or included in model context.
+## Capture remains user-controlled
 
-## Cloud credentials
+Scripts and agents do not inherit screen or microphone permission. A supported agent workflow may request a one-time capture, but Bowerbirds shows the request and the person can approve, decline, review, or cancel it.
 
-| Credential | Prefix | Scope | Read | Write |
-| --- | --- | --- | :---: | :---: |
-| User session | — | Account and active workspace | By role | By role |
-| Agent token | `bbt_` | One Bucket and one role | Yes | `contribute` or `admin` |
-| Publishable Web Capture key | `bbk_` | One intake capability | No | New visitor captures only |
+## Use the narrowest access
 
-An agent token cannot switch workspaces or Buckets with a request header. The target Bucket and role are stored in the grant itself. Revocation is checked on the next request. Agent tokens currently have no automatic expiry, so revoke one when its integration is retired.
+Local integrations run with the signed-in person's Bowerbirds access. Remote integrations are limited to the Bucket and role selected by its administrator.
 
-Use the least-privileged token. An `admin` agent token is not needed for any of the four remote MCP tools and can also pass Bucket-admin REST gates, including agent-token management. Prefer `read` or `contribute` for remote MCP.
+- Use **read** for integrations that only inspect context.
+- Use **contribute** only when the integration needs to add findings.
+- Store connection credentials in the client's secret storage or an environment variable.
+- Revoke credentials when an integration is retired or a secret may have been exposed.
 
 <Warning>
-  Treat `bbt_` values as secrets. Do not commit them to an MCP config. Web Capture `bbk_` keys are different: they are publishable by design and still cannot read data.
+  Never commit a Bowerbirds connection credential to source control or place it in a shared project configuration.
 </Warning>
-
-## Human-assisted capture
-
-The local MCP tool `request_capture_authorization` creates a visible, expiring request. Approval grants one capture, not ongoing screen access. Bowerbirds hides its Library, captures the prepared target, and opens the normal annotation editor. Denial or expiry captures nothing.
-
-## Payload delivery
-
-Local MCP protects model context with an 8 MB payload cap. Use `import_local_file` for large incoming files and the CLI for large outgoing files.
-
-Remote MCP does not inline payload bytes. Capture manifests return authenticated HTTPS URLs; the client must fetch a selected payload with the same bearer token.

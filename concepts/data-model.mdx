@@ -1,14 +1,12 @@
 ---
-title: "Data model"
+title: "Core concepts"
 description: "Buckets, directories, records, payloads, Packages, and private staging."
-icon: "database"
+icon: "shapes"
 ---
 
 ## Buckets and directories
 
-A **Bucket** is a global top-level container. It is the unit you select, share, sync, export, or grant to an agent. Directories form a nested path inside a Bucket; they are not nested Buckets.
-
-Use slugs when addressing either kind of location programmatically:
+A **Bucket** is the top-level unit you organize, sync, share, or grant to an integration. Directories organize records inside a Bucket.
 
 ```sh
 bowerbirds bucket create "Payments bug"
@@ -16,54 +14,22 @@ bowerbirds directory create payments-bug "Browser evidence"
 bowerbirds directory list payments-bug --json
 ```
 
-Cross-Bucket directory moves and directory cycles are rejected.
+Commands use Bucket and directory slugs returned by Bowerbirds.
 
-## Records
+## Records and payloads
 
-A record is one durable piece of context. Bowerbirds uses a closed set of broad record kinds:
+A **record** is one durable piece of context, such as a capture, recording, note, Scratchpad, or imported file.
 
-| Kind | Typical content |
-| --- | --- |
-| `capture` | Annotated screenshot, original image, and editable annotation session |
-| `recording` | Screen video and/or microphone and device audio |
-| `dictation` | Immutable filed transcript/audio from compatible or legacy workflows |
-| `scratchpad` | Mutable document with revision history |
-| `clipboard` | Clipboard value explicitly promoted from private history |
-| `note` | Plain text finding or note |
-| `file` | Imported or generated file, including Packages |
-| `rfi` | Structured request for human input and its response |
-
-Each record carries an ID, title, content, tags, timestamps, source, and optional author. More specific meaning comes from tags and payload roles rather than an ever-growing record-kind enum.
-
-## Payloads
-
-Payloads are named files attached to a record. A payload has:
-
-- a safe relative `name`;
-- a MIME type;
-- a semantic `role`;
-- a byte count;
-- the bytes themselves in the local payload store or cloud object storage.
-
-Readers should branch on `role`, not guess from the filename. See [Payload roles](/reference/payload-roles).
+A record can have one or more **payloads**. These are the files associated with it—for example, an original screenshot, an annotated image, audio, video, or a document. List a record's payloads before fetching one instead of guessing its filename.
 
 ## Unsorted and Trash
 
-**Unsorted** is not a Bucket. It is private staging on one device, represented by a record with no Bucket reference. Normal CLI listings and exports, local MCP, cloud sync, and remote MCP do not enumerate it. The low-level local `capture update` and `capture duplicate` commands can resolve an Unsorted capture when its ID is already known; this is an app-integration escape hatch, not a discovery API.
+**Unsorted** is private staging on one device. CLI listings, exports, and MCP connections do not enumerate it. File a record into a Bucket when it should be available to scripts or agents.
 
-**Trash** is recoverable. Removing a record remembers where it came from; restoring returns it there when possible, or to Unsorted if the original location no longer exists. Only emptying or purging Trash is permanent.
+**Trash** is recoverable until it is emptied.
 
 ## Packages
 
-A Package is a normal filed record carrying `package.json`. Its document can contain:
+A **Package** is an ordered collection of records and visual scenes used for handoffs, reviews, demos, or guides. Creating a Package does not alter its source records.
 
-- ordered entries that reference records, payloads, Scratchpads, or files;
-- ordered visual scenes;
-- normalized annotations such as spotlights, arrows, comments, drawings, redactions, and mosaics;
-- provenance and metadata.
-
-Packages reference source records by stable ID and payload name. Creating or editing a Package does not rewrite those sources.
-
-<Card title="Package v2 schema" icon="brackets-curly" href="/reference/package-v2">
-  See a complete document and the validation contract.
-</Card>
+Use the Package tools to create, validate, and retrieve one. See [Build a Package](/workflows/packages).

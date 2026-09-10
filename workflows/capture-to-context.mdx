@@ -4,14 +4,14 @@ description: "Follow one artifact from capture to durable context and downstream
 icon: "arrow-right-arrow-left"
 ---
 
-This is the common storage and routing spine behind screenshots, notes, recordings, and imported files. Individual capture surfaces branch where their consent or processing rules differ.
+This is the common user-facing flow behind screenshots, notes, recordings, and imported files.
 
 <Steps>
   <Step title="Capture or import">
     A person captures through an app surface, a script invokes the CLI, an agent imports a local path, or a website visitor submits through Web Capture.
   </Step>
-  <Step title="Write the source">
-    Bowerbirds creates a record and writes its original payloads. Metadata includes the kind, source, author where known, title, content, tags, and timestamps.
+  <Step title="Preserve the capture">
+    Bowerbirds keeps the original material available alongside searchable text and any reviewed annotations.
   </Step>
   <Step title="Choose the location">
     The record lands in private Unsorted, a selected Bucket/directory, a shared Triage shelf, or a Web Capture intake. This step does not require AI.
@@ -20,7 +20,7 @@ This is the common storage and routing spine behind screenshots, notes, recordin
     Optional work may transcribe audio, polish a note, classify a Triage record, analyze a recording, or run a cloud Flow. Derived output is written separately or as new payloads.
   </Step>
   <Step title="Route and synchronize">
-    A person or policy files the record to an allowed destination. Shared cloud locations synchronize through the durable upload path; local-only or Unsorted records do not.
+    A person or approved policy files the record to an allowed destination. Only selected shared locations synchronize; local-only and Unsorted records do not.
   </Step>
   <Step title="Consume or compose">
     Apps, CLI, or MCP clients search records, fetch selected payloads, add findings, create Packages, or export a portable folder.
@@ -30,10 +30,10 @@ This is the common storage and routing spine behind screenshots, notes, recordin
 ## Stable invariants
 
 - Raw evidence remains available when optional processing fails.
-- Normal listings, exports, and MCP cannot enumerate Unsorted. A local CLI caller that already knows a capture ID can use the capture update or duplicate workflow against it.
+- Normal listings, exports, and MCP cannot enumerate Unsorted.
 - Payload bytes are fetched deliberately rather than included in every listing.
 - Source records are referenced, not rewritten, by Packages.
-- Mutable Scratchpads use revisions. Current live Dictation delivers successful text without filing a record; older or explicitly filed Dictation records remain immutable.
+- Mutable Scratchpads use revisions. Live Dictation normally delivers successful text without filing a record.
 - Normal deletion is recoverable.
 
 ## A programmatic example
