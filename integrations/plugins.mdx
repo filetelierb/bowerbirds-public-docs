@@ -1,32 +1,115 @@
 ---
 title: "Plugins"
-description: "Installable packages for Claude Code and Codex that bundle the remote MCP door and a skill."
+description: "One repository, two audiences: a client plugin for Claude Code and Codex, and a workspace plugin that installs skills, route templates and connector declarations."
 icon: "puzzle-piece"
 ---
 
-The `bowerbirds-plugins` repository packages the same thing for two ecosystems: the remote MCP door, which the client authorizes in your browser, plus a `bowerbirds-records` skill that teaches the agent how records, payload URLs and signatures work.
+The public repository [github.com/filetelierb/bowerbirds-plugins](https://github.com/filetelierb/bowerbirds-plugins) is two plugins in one:
+
+- a **client plugin** for Claude Code and for Codex and ChatGPT that bundles the remote MCP door, the `bowerbirds-records` skill and the routing command;
+- a **workspace plugin** — `bowerbirds.plugin.json` at the repository root — that a Bowerbirds workspace installs to receive skills, route templates and the connectors those templates expect.
 
 ## Claude Code
-
-Once the repository is published:
 
 ```sh
 claude plugin marketplace add filetelierb/bowerbirds-plugins
 claude plugin install bowerbirds@bowerbirds
 ```
 
-From a checkout, without a marketplace:
+From a checkout, without a marketplace: `claude --plugin-dir ./claude`.
 
-```sh
-claude --plugin-dir ./claude
-```
+The plugin adds the `bowerbirds` MCP server, the `bowerbirds-records` skill, and two commands:
 
-The plugin adds the `bowerbirds` MCP server, the skill, and a `/bowerbirds-triage` command that sweeps a Bucket's unsigned records, acts on each, and signs it.
+- `/bowerbirds-triage <bucket>` sweeps a Bucket's unsigned records, acts on each in the repository you are in, and signs it.
+- `/bowerbirds-route <bucket>` runs one routing cycle as the Bucket's [external router](/cloud/external-routers): claim the cycle, read the routes, decide per record per route, act only through `derive_record` and the route's enabled connector tools, sign with the links, release. It needs a token with the `router` role.
 
 ## Codex and ChatGPT
 
-The repository's `codex/` directory is an Agent Plugin: `plugin.json`, `mcp.json` naming the remote server, the skill, and the `.codex-plugin/` compatibility manifest. Install it from that path in the Codex CLI, or register the MCP endpoint in ChatGPT's developer mode.
+The `codex/` directory is an Agent Plugin: `plugin.json`, `mcp.json` naming the remote server, the `bowerbirds-records` and `bowerbirds-route` skills, `prompts/bowerbirds-route.md` (the same loop as a custom prompt: `/prompts:bowerbirds-route <bucket>`), and the `.codex-plugin/` compatibility manifest. Install it from that path in the Codex CLI, or register the MCP endpoint in ChatGPT's developer mode.
 
 <Note>
-  The repository is public at [github.com/filetelierb/bowerbirds-plugins](https://github.com/filetelierb/bowerbirds-plugins). If your client cannot install plugins, add the endpoint by hand as described in [Connect a client](/mcp/remote-server).
+  If your client cannot install plugins, add the endpoint by hand as described in [Connect a client](/mcp/remote-server).
 </Note>
+
+## Install into a workspace
+
+A workspace plugin is any **public GitHub repository** with `bowerbirds.plugin.json` at its root. A workspace owner or administrator installs it by source and optional ref:
+
+```sh
+bowerbirds cloud plugins install filetelierb/bowerbirds-plugins [--ref main]
+bowerbirds cloud plugins list
+bowerbirds cloud plugins show <plugin-id>
+bowerbirds cloud plugins templates
+bowerbirds cloud plugins upgrade <plugin-id>
+bowerbirds cloud plugins remove <plugin-id>
+```
+
+Installing brings:
+
+- **Skills** as workspace skills with an `origin {plugin, version}`. A hand-authored skill under a name the plugin ships refuses the install rather than being overwritten.
+- **Route templates**, recorded whole on the installed plugin and listed by `plugins templates`, so a route in the [router editor](/cloud/routers) is one tap.
+- **Connector declarations**: each server the templates expect lands in the workspace's connector registry in the state `needs-connecting`, with no secret. A URL the workspace already connects reuses that connector instead.
+
+Upgrade is a reinstall at a newer commit; what the new manifest no longer ships is taken back. Remove takes only what the plugin brought: a connector somebody connected with their own credential stays. The same plugin name from another source is refused.
+
+## The manifest
+
+```json
+{
+  "name": "bowerbirds",
+  "version": "1.1.0",
+  "description": "The records skill, a route template that turns bug captures into Linear issues, and the Linear connector it expects.",
+  "skills": ["claude/skills/bowerbirds-records/SKILL.md"],
+  "routeTemplates": [
+    {
+      "name": "Bugs to Linear",
+      "kind": "agentic",
+      "description": "Captures and notes that report a bug become Linear issues.",
+      "goal": "One Linear issue per distinct bug, with the capture's comments as the reproduction steps.",
+      "rules": "Search the team's issues before creating one. Never delete, close or edit an existing issue.",
+      "skills": ["bowerbirds-records"],
+      "destinations": ["linear:TEAM"],
+      "connector": {
+        "server": "linear",
+        "expectedTools": ["search_issues", "get_issue", "create_issue", "create_comment"],
+        "grant": {
+          "enabled": ["search_issues", "get_issue", "list_issues", "create_issue", "create_comment"],
+          "disabled": ["delete_issue", "delete_comment"]
+        }
+      }
+    }
+  ],
+  "connectors": [
+    { "name": "linear", "url": "https://mcp.linear.app/mcp", "transport": "http", "auth": "oauth" }
+  ]
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `name`, `version` | Lowercase name (letters, digits, `-`, `_`, `.`; at most 64) and a short version string. `description` is optional, clipped at 500 characters |
+| `skills[]` | Paths inside the repository to `SKILL.md` files (at most 32). The frontmatter's `name` is the skill id, its `description` the cue, everything after the frontmatter the body |
+| `routeTemplates[]` | At most 32. `kind` is `direct` or `agentic` (default). `description`, `goal` and `rules` are prose for the route; `skills` name skills this plugin ships; `destinations` use the route destination grammar with placeholders a person fills; `format.template` is a direct route's formatting template |
+| `routeTemplates[].connector` | `server` is a connector declared in the same manifest, by name, or an https URL; `expectedTools` are the tools the template relies on; `grant.enabled` and `grant.disabled` seed the route's tool grant. A tool in both lists refuses the manifest |
+| `connectors[]` | At most 16. `name`, an https `url`, `transport` (`http` default, or `sse`), `auth` (`oauth` default, `token`, or `none`). An optional `oauthClient {clientId, scopes}` is a pre-registered public client for servers without dynamic registration. Two names for one URL are refused: a workspace connects to a server once |
+
+A manifest is at most 256 KB and every text field at most 8 KB. Unknown fields are ignored, so a newer manifest installs on an older cloud with what the cloud knows. Nothing in a manifest is a secret, because nothing in a public repository can be.
+
+## Connectors
+
+A **connector** is the workspace's one connection to an MCP server: its credential, its health, and the tool catalogue the server advertises with each tool's annotations (`readOnly`, `destructive`, `annotated`). Routes link connectors and grant tools by name; see [Routers](/cloud/routers#what-a-route-is).
+
+```sh
+bowerbirds cloud mcp-servers list
+bowerbirds cloud mcp-servers show <connector-id>
+bowerbirds cloud mcp-servers add https://mcp.linear.app/mcp [--name linear]
+bowerbirds cloud mcp-servers add https://example.com/mcp --token <bearer-token>
+bowerbirds cloud mcp-servers health [--check]
+bowerbirds cloud mcp-servers check <connector-id>
+bowerbirds cloud mcp-servers remove <connector-id>
+```
+
+- `add` with a URL alone registers the connector as `needs-connecting` and says how to finish: a browser link when the server offers OAuth (an owner or administrator opens it), or the `--token` form when it does not.
+- Registering the same server twice is refused with the name of the connector the workspace already has.
+- `health` reports `ok`, `expiring` (credential ends within seven days), `expired`, `revoked` or `unreachable`; a daily sweep probes every connected server, refreshes rotating tokens, and raises one "Reconnect" item in the inbox when a connector leaves `ok`.
+- `remove` revokes the credential at the server where it can, and routes that link the connector refuse at apply time until it is connected again.

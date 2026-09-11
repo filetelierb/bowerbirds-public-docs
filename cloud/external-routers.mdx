@@ -1,0 +1,143 @@
+---
+title: "External routers"
+description: "Make your own coding agent a Bucket's router: the router role, the five routing tools, and the /bowerbirds-route command."
+icon: "robot"
+---
+
+An **external router** is a router of kind `external` whose brain is your own agent — Claude Code, Codex or any MCP client — holding a workspace token with the `router` role. It runs the same loop a native router runs, on your model with your tools, at zero platform credits, and the records end up with the same route marks, router status and destination links. Read [Routers](/cloud/routers) first for what routes, marks and statuses are.
+
+## The router role
+
+A token with the `router` role can **add and sign only**: it fetches records, files captures and notes, derives records, and signs route and router marks. The move, trash, restore, bulk-trash, purge and edit doors refuse it by name (`403 router_role`), so a routing agent cannot damage the Bucket it routes even by mistake.
+
+Mint one as a workspace owner or administrator:
+
+```sh
+curl -X POST "$BOWERBIRDS_API/orgs/tokens" \
+  -H "Authorization: Bearer <your session>" \
+  -H "Content-Type: application/json" \
+  -d '{"role": "router", "label": "claude code, feedback bucket"}'
+```
+
+The token is shown once; keep its sixteen-character `id` for the router document. Today neither the browser approval page nor `bowerbirds cloud tokens mint --role` offers the `router` role, so the door is the way to mint it. Give the token to the agent as its bearer header ([Clients without OAuth](/mcp/remote-server#clients-without-oauth)) or to the CLI with `--token`.
+
+## Attach the router
+
+A router of kind `external` names its brain under `external.tokenId`; the cloud verifies on every write that the token holds the `router` role, belongs to this workspace and is not revoked, and stamps the client's name from the grant.
+
+```json
+{
+  "name": "Feedback, routed by my agent",
+  "kind": "external",
+  "records": { "bucket": { "owner": "me", "slug": "feedback" } },
+  "external": { "tokenId": "<token id>" },
+  "routes": [
+    {
+      "id": "bug-linear",
+      "name": "Bug → Linear issue",
+      "description": "A capture or note that reports something broken.",
+      "rules": { "text": "Search before creating; never close or edit an issue." },
+      "connectors": [{ "connectorId": "linear", "tools": { "enabled": ["search_issues", "get_issue", "create_issue", "create_comment"], "disabled": ["delete_issue"] } }],
+      "destinations": { "external": [{ "connectorId": "linear", "target": "ENG" }] }
+    }
+  ]
+}
+```
+
+```sh
+bowerbirds cloud routers create --file router.json
+```
+
+The Routers tab lists it with the client's name and zero credits. The fleet never runs an external router: a scheduled or arrival tick is refused before any model call, because its records dispatch through the agent that drives it.
+
+## The five routing tools
+
+The MCP door advertises these to a router-role token beside the [ordinary tools](/mcp/remote-tools). Every write is judged by the same gate a native cycle uses — destination allowlist, tool grant, derivation caps, trust — before a mark is written, and the gate's refusal is the tool's answer.
+
+| Tool | What it does |
+| --- | --- |
+| `list_routes` | The Bucket's router and its routes: destinations, connectors with their `tools.enabled` and `tools.disabled`, description, goal, rules, skills, `trustedExternalCreate`; whether this token is the brain; the running cycle |
+| `claim_cycle` | Takes the Bucket's cycle marker under a lease (default 10 minutes, at most 60) and answers the `cycleId` the marks carry. Refused with the holder while another run — yours or the fleet's — is on the Bucket |
+| `renew_cycle` / `release_cycle` | Extends the lease; lets it go when the run is done |
+| `derive_record` | A new record from a source — `split` or `augment` — with provenance, depth and the source's payload bytes copied, filed at a path or Bucket inside the route's destinations. The source is never written; landing in the same Bucket, the derived record is signed `routed` at birth |
+| `sign_items` (`items` shape) | The source's route marks and router mark with a status and one link per route |
+
+### `derive_record`
+
+```json
+{
+  "slug": "feedback",
+  "sourceId": "<record>",
+  "route": "bug-linear",
+  "kind": "augment",
+  "title": "Login button off-center on Safari",
+  "content": "Reproduction: …",
+  "path": "team/notes",
+  "cycle": "<cycleId>"
+}
+```
+
+`bucket` defaults to the same Bucket; `copyPayloads` defaults to `true`; `route` may be omitted when the router has exactly one. The answer names the derived record's id and the source's status (`processed`). The gate refuses a derivation past depth 3, more than 5 from one source in a day, or outside the route's paths and Buckets.
+
+### `sign_items` with `items`
+
+```json
+{
+  "slug": "feedback",
+  "cycle": "<cycleId>",
+  "items": [{
+    "id": "<record>",
+    "status": "routed",
+    "links": [
+      { "route": "bug-linear", "kind": "create", "destination": "ENG-123", "connectorId": "linear", "target": "ENG", "tool": "create_issue" },
+      { "route": "internal-notes", "kind": "none" }
+    ]
+  }]
+}
+```
+
+One link per route per record. A `derive` names the derived record's id as `destination` (and `bucket`, `path`); `create` and `append` name the item, `connectorId`, `target` and the `tool` used; `link` names the item, `connectorId` and `target`; `none` names nothing. The status must agree with the links — `kept` only when every route said `none`, `processed` when something was derived, `routed` when the record was dispatched externally, `pending` only when a route still owes a report — and the answer says per record whether it was signed, what was refused and why. Records signed as the router are also signed by the token, so `list_items` with `signed: false` is still its queue.
+
+Without `cycle`, the marks carry the cycle the token holds, or one minted for the call; claim a cycle first so other runs stay off the Bucket while you work.
+
+### The cycle over REST
+
+The same lease is available to a CLI-less agent, with agent tokens admitted:
+
+```text
+POST /flows/{router-id}/cycles/claim            {agentTokenId?, ttlSeconds?}   → {cycleId, expiresAt, renewed}
+POST /flows/{router-id}/cycles/{cycle}/renew    {ttlSeconds?}                  → {cycleId, expiresAt, renewed}
+POST /flows/{router-id}/cycles/{cycle}/release                                 → {released}
+```
+
+`agentTokenId`, when given, must be the token presenting the request: a brain claims for itself. Refusals: `409 cycle_held` with the holder, `403` when the token is not the brain, `409 not_the_holder` when the lease lapsed and was taken, `400` when the router is not external or names no brain yet.
+
+## `/bowerbirds-route`
+
+The [Bowerbirds plugin](/integrations/plugins) ships the loop as a command for Claude Code (`/bowerbirds-route <bucket>`) and as a Codex prompt and skill (`/prompts:bowerbirds-route <bucket>`). It runs one cycle:
+
+<Steps>
+  <Step title="Claim">
+    `claim_cycle` on the Bucket; stop and report the holder on `cycle_held`, or the sentence when this token is not the router's brain.
+  </Step>
+  <Step title="Read the routes">
+    `list_routes` is the allowlist: derive only into a route's paths and Buckets, reach its external targets only with the tools it enables.
+  </Step>
+  <Step title="Fetch the unsigned">
+    `list_items` with `signed: false`, paging on `cursor`; `get_capture` for content and payload URLs.
+  </Step>
+  <Step title="Decide per record, per route">
+    One of `derive`, `create`, `append`, `link`, `none`, with a reason and a confidence. A record may fit several routes; several records may be one thing.
+  </Step>
+  <Step title="Look before acting">
+    Search the destination with the route's enabled read tools. An existing item turns a create into an append or a link; the links other runs recorded are the dedupe memory.
+  </Step>
+  <Step title="Act through two doors only">
+    `derive_record`, and the route's enabled connector tools for `create` and `append`. A route with `trustedExternalCreate: false` does not create yet; the record is reported as needing a person.
+  </Step>
+  <Step title="Sign, then release">
+    `sign_items` with `items` and the cycle, then `release_cycle` — also after a stop. Then report what was signed with its links, what was left unsigned and why, and every clamp verbatim.
+  </Step>
+</Steps>
+
+A refusal from the gate is a rule, not a retry: the agent leaves that record as it is and goes on. Leaving a record unsigned is preferred over signing it `pending`, because an unsigned record comes back in the next run.

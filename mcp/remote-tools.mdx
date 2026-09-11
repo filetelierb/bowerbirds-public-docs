@@ -17,6 +17,7 @@ A Bucket token acts on its Bucket only. A workspace token names the Bucket on ev
 | `trash_items` | Move records to the Trash; a person can restore them |
 | `sign_items` / `unsign_items` | Put this token's mark on records, or take it off |
 | `add_finding` | A short note at the Bucket root |
+| `list_routes`, `claim_cycle`, `renew_cycle`, `release_cycle`, `derive_record`, `sign_items` with `items` | The routing tools, advertised to a token with the `router` role; see below |
 
 ## `list_items`
 
@@ -82,6 +83,22 @@ Another token sees only its own marks. A person's session sees no `signed` field
 ```
 
 Moves follow the app's rules: write access on both sides, a record in the Trash refuses, a deleted or intake Bucket refuses, and a move to where the record already is succeeds and changes nothing. `trash_items` takes `{ "slug", "ids" }` and answers what was trashed, what was already gone, and what refused. Nothing here deletes for good.
+
+## Routing tools
+
+A token with the `router` role is a Bucket's [external router](/cloud/external-routers): the Bucket's router document names it as the brain, and the door advertises five more tools to it. They write the same route marks and router status a native router writes, and every write is judged by the same gate first.
+
+| Tool | Purpose |
+| --- | --- |
+| `list_routes` | The Bucket's router and its routes: destinations, connectors with their tool grants, description, goal, rules, and whether the route may create external items unattended |
+| `claim_cycle` | Take the Bucket's cycle marker under a lease (10 minutes by default, at most 60) and receive the `cycleId` the marks carry |
+| `renew_cycle` / `release_cycle` | Extend the lease; let it go when the run is done |
+| `derive_record` | A new record from a source — `split` or `augment` — with provenance and the source's payload bytes copied, inside the route's destinations. The source is never written |
+| `sign_items` with `items` | The source's route marks and router mark: a `status` (`pending`, `kept`, `routed`, `processed`) and one link per route (`derive`, `create`, `append`, `link`, `none`) with the destination item's id |
+
+`sign_items` keeps its plain `ids` shape for every role: a token's own mark, unchanged. A `router` token calling `move_items` or `trash_items` is refused with `router_role`; routers only add.
+
+Every record a router handled answers `routerStatus {status, cycleId, at, missing}`, `links [{route, kind, destination}]` and, on a derived record, `derivedFrom` — from `list_items`, `get_capture` and the CLI alike.
 
 ## What an agent cannot do
 

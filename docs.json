@@ -52,6 +52,8 @@
             "group": "Cloud",
             "pages": [
               "cloud/sync-and-sharing",
+              "cloud/routers",
+              "cloud/external-routers",
               "cloud/web-capture",
               "concepts/security"
             ]
@@ -79,6 +81,7 @@
               "mcp/remote-server",
               "mcp/agent-tokens",
               "integrations/plugins",
+              "cloud/external-routers",
               "reference/troubleshooting"
             ]
           }
@@ -124,6 +127,7 @@
             "group": "Tool reference",
             "pages": [
               "mcp/remote-tools",
+              "cloud/external-routers",
               "reference/troubleshooting"
             ]
           }
@@ -169,6 +173,10 @@
     {
       "source": "/mcp/local-tools",
       "destination": "/mcp/remote-tools"
+    },
+    {
+      "source": "/cloud/flows",
+      "destination": "/cloud/routers"
     }
   ]
 }

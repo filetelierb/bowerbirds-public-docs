@@ -1,12 +1,12 @@
 ---
 title: "Routing and Triage"
-description: "Control where new records land and how optional classification moves them."
+description: "Control where new records land and how a router on the Triage shelf dispatches them."
 icon: "route"
 ---
 
 Bowerbirds separates **routing** from **classification**.
 
-Routing chooses where a new capture is born. Classification is optional later work that proposes or performs a move.
+Routing chooses where a new capture is born. Classification is optional later work, done by a router on the shared Triage shelf, that derives a copy at a destination or asks a person; it never moves the source.
 
 ## Device routing
 
@@ -23,26 +23,22 @@ flowchart TD
   N[New capture] --> S{Route to shared Triage?}
   S -->|No| U[Private Unsorted]
   S -->|Yes| C[Shared Triage]
-  C --> P{Classification enabled?}
-  P -->|No| W[Wait for human filing]
-  P -->|Suggest| G[Record a suggested destination]
-  P -->|Automatic| M[Move within the workspace]
+  C --> P{Router on the shelf?}
+  P -->|No router| W[Wait for human filing]
+  P -->|Router asks| G[Attention queue: a person answers]
+  P -->|Router dispatches| M[Derived copy at the destination, source signed]
 ```
 
-## Classification policy
+## Classification is a router
 
-An administrator can configure an allowlist of destination Buckets/directories, an optional fallback, and a mode:
+Classification on the shared Triage shelf is a **router** attached to the shelf Bucket: a direct router with one route per destination and rule chips (kind, path, tag, keyword, age) the gate checks, or an agentic router whose routes Bowerbirds AI delegates to. Either way the router only adds — it derives a copy into the destination and signs the source with a status, and a cleanup rule on the shelf retires `routed` sources after a grace period — so a record is never silently moved. What used to be the `suggest` mode is the router's attention queue: a route that is not sure asks, with alternatives and a recommendation. See [Routers](/cloud/routers).
 
-- `suggest` records a recommendation without moving the record;
-- `both` lets the classifier choose between filing and suggesting for each record;
-- `auto` moves the record automatically.
+The former classification policy (`suggest`, `both`, `auto`, an allowlist and a fallback) is retired; a workspace administrator attaches a router instead.
 
-If no destination fits and no fallback exists, the record stays where it is.
+## Web Capture intakes
 
-## Web Capture triage
-
-Web Capture intake is a separate source. An administrator can apply the same destination policy to submitted reports while keeping intake separate from ordinary filing destinations.
+A Web Capture intake is a separate source with a router of its own; see [Web Capture](/cloud/web-capture#routing-submitted-reports).
 
 <Warning>
-  Triage destinations stay inside the same workspace. Web Capture intakes and the Triage shelf itself cannot be selected as destinations.
+  Destinations stay inside the same workspace or a connected tool. Web Capture intakes and the Triage shelf itself cannot be named as a route's destination.
 </Warning>

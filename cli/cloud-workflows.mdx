@@ -1,6 +1,6 @@
 ---
 title: "Cloud CLI workflows"
-description: "Authenticate, synchronize, share, search, process, and route cloud context."
+description: "Authenticate, synchronize, share, search, process, and route cloud context: records, routers, connectors, plugins and skills."
 icon: "cloud"
 ---
 
@@ -112,20 +112,61 @@ bowerbirds cloud share launch-research --members
 bowerbirds cloud share launch-research --revoke <uid>
 ```
 
-Human Bucket roles are `read`, `contribute`, and `admin`.
+Human Bucket roles are `read`, `contribute`, and `admin`. Agent tokens add a fourth, `router`, that only adds and signs; see [Agent tokens](/mcp/agent-tokens).
 
-## Run a Flow
+## Routers
 
-Flows pair a goal with a bounded record scope and an allowlist of outcomes.
+A router sits on one Bucket and dispatches what lands there; see [Routers](/cloud/routers) for kinds, routes, the gate and signatures. The CLI files a router from a JSON document and runs, reviews and answers for it.
 
 ```sh
-bowerbirds cloud flows list
-bowerbirds cloud flows create --file flow.json
-bowerbirds cloud flows run <flow-id> --follow
-bowerbirds cloud flows apply <run-item-id> --strike op-3
+bowerbirds cloud routers list
+bowerbirds cloud routers show <router-id>
+bowerbirds cloud routers create --file router.json
+bowerbirds cloud routers update <router-id> --file router.json
+bowerbirds cloud routers delete <router-id>
+bowerbirds cloud routers run <router-id> [--items id,id] [--follow]
+bowerbirds cloud routers runs <router-id> [--cost]
+bowerbirds cloud routers attention [<router-id>] [--state open|handled]
+bowerbirds cloud routers answer <attention-id> --alternative <n> | --text "<answer>"
 ```
 
-A planning run writes proposals; it does not apply them. Applying a reviewed plan is a separate command. `--strike` omits selected operation IDs.
+- `create` refuses a second router on a Bucket, naming the one it already has.
+- `run` starts one cycle now; `--items` limits it to named records, `--follow` streams progress and exits with the parked reason when the cycle pauses for credits or storage.
+- `runs --cost` lists each cycle with what it cost.
+- `attention` lists the questions the gate raised — an untrusted external create, a clamp, a tripped breaker, a budget shortfall, a refused connector, or a route's explicit ask — and `answer` picks one of the row's alternatives by number or gives your own words. Answering runs a child cycle over the flagged records only.
+
+`bowerbirds cloud flows …` remains as a deprecated alias; `flows apply <run-item-id> [--strike op-1,op-2]`, the reviewed-plan apply, stays under it.
+
+An external router — your own agent as the Bucket's brain — is created the same way with `"kind": "external"`; see [External routers](/cloud/external-routers).
+
+## Connectors, plugins and skills
+
+What a router can reach. A **connector** is the workspace's one connection to an MCP server; a **plugin** installs skills, route templates and connector declarations from a public GitHub repository; a **skill** is a workspace document a route snapshots into its run. See [Plugins](/integrations/plugins).
+
+```sh
+bowerbirds cloud mcp-servers list
+bowerbirds cloud mcp-servers show <connector-id>
+bowerbirds cloud mcp-servers add https://mcp.linear.app/mcp [--name linear]
+bowerbirds cloud mcp-servers add https://example.com/mcp --token <bearer-token>
+bowerbirds cloud mcp-servers health [--check]
+bowerbirds cloud mcp-servers check <connector-id>
+bowerbirds cloud mcp-servers remove <connector-id>
+
+bowerbirds cloud plugins install filetelierb/bowerbirds-plugins [--ref main]
+bowerbirds cloud plugins list
+bowerbirds cloud plugins show <plugin-id>
+bowerbirds cloud plugins templates
+bowerbirds cloud plugins upgrade <plugin-id>
+bowerbirds cloud plugins remove <plugin-id>
+
+bowerbirds cloud skills list
+bowerbirds cloud skills show <skill-id>
+bowerbirds cloud skills create <name> --file body.md [--description "<text>"]
+bowerbirds cloud skills update <skill-id> [--file body.md] [--description "<text>"]
+bowerbirds cloud skills delete <skill-id>
+```
+
+`mcp-servers add` with a URL alone registers the connector as `needs-connecting` and answers how to finish: a browser link when the server offers OAuth, or the `--token` form when it does not. Plugin verbs are for a workspace owner or administrator.
 
 ## Answer an RFI
 
@@ -134,7 +175,7 @@ bowerbirds cloud rfis list --state open
 bowerbirds cloud rfis answer <rfi-id> "Use the production workspace"
 ```
 
-Processing resumes after the answer is filed.
+Processing resumes after the answer is filed. A router's questions live in its attention queue (`cloud routers attention`) and are answered there.
 
 <Note>
   Cloud commands include additional surfaces for Forms, Web Capture, record annotation, Packages, deleted Buckets, structure editing, usage, and upload retry. See the [CLI command reference](/reference/cli-commands).

@@ -13,8 +13,9 @@ An agent acts as its own token, never as a person. A token has one role and one 
 | `read` | The agent fetches records and signs what it handled |
 | `contribute` | The agent also files, moves and trashes records |
 | `admin` | The agent also administers Buckets |
+| `router` | The agent is a Bucket's [external router](/cloud/external-routers): it fetches, files, derives and signs, and is refused by name at every door that moves, edits, restores or trashes a record |
 
-Use the narrowest role that supports the workflow.
+Use the narrowest role that supports the workflow. `router` is neither wider nor narrower than `contribute`: it adds everything `contribute` adds and can never take anything away, which is what a routing agent left alone needs.
 
 ## Scopes
 
@@ -35,6 +36,13 @@ bowerbirds cloud tokens mint --label "ci reviewer" --role read --bucket me/qa   
 ```
 
 The Mac app's **Settings → Developer Tools** mints workspace tokens too.
+
+The browser approval and `tokens mint --role` offer `read`, `contribute` and `admin`. A `router` token is minted through the door for now, as an owner or administrator:
+
+```sh
+curl -X POST "$BOWERBIRDS_API/orgs/tokens" -H "Authorization: Bearer <your session>" \
+  -H "Content-Type: application/json" -d '{"role": "router", "label": "claude code, feedback bucket"}'
+```
 
 ## See and revoke connections
 

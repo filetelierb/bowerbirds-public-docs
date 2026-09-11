@@ -42,11 +42,11 @@ Wildcard subdomains can be configured deliberately. Keep the allowlist as narrow
 
 Visitor submissions are attributed as web activity and do not imply a verified personal identity.
 
-## Optional Triage
+## Routing submitted reports
 
-An administrator can enable server-side classification for one intake, choose `auto`, `suggest`, or `both`, attach workspace skills, allowlist destinations, and set a fallback.
+A submitted capture stays in its intake until a person files it or the intake's **router** dispatches it. The classification policy that used to live on an intake is retired; what it did — a rule per destination, an optional Bowerbirds AI step to shape the record, a spend ceiling — is a **direct router** attached to the intake Bucket, with one route per destination and a monthly budget. An intake has at most one router, and routers only add: a report is derived into the workspace or dispatched to a connected tool, and the source stays in the intake until a cleanup rule retires it. See [Routers](/cloud/routers).
 
-Classification settings are controlled by a workspace administrator. A submitted capture remains in its intake until the selected policy routes it or a person files it.
+Attaching a router is a workspace administrator's decision, like every setting that spends credits.
 
 <Warning>
   A Web Capture intake is a source, not a normal filing destination. Native apps and agent tokens cannot use it as a general-purpose write target.
