@@ -18,6 +18,8 @@ A Bucket token acts on its Bucket only. A workspace token names the Bucket on ev
 | `sign_items` / `unsign_items` | Put this token's mark on records, or take it off |
 | `add_finding` | A short note at the Bucket root |
 | `list_routes`, `claim_cycle`, `renew_cycle`, `release_cycle`, `derive_record`, `sign_items` with `items` | The routing tools, advertised to a token with the `router` role; see below |
+| `get_record_context` | Read what the media processor learned about a record — digest, graded signals, entities, screens, timed moments — or one `part` of it; free, any role. See [Media context](/cloud/media#mcp-tools) |
+| `process_media` | Compute a record's context now through the platform's processor; `router` role only, charges the workspace's credits |
 
 ## `list_items`
 
@@ -98,7 +100,7 @@ A token with the `router` role is a Bucket's [external router](/cloud/external-r
 
 `sign_items` keeps its plain `ids` shape for every role: a token's own mark, unchanged. A `router` token calling `move_items` or `trash_items` is refused with `router_role`; routers only add.
 
-Every record a router handled answers `routerStatus {status, cycleId, at, missing}`, `links [{route, kind, destination}]` and, on a derived record, `derivedFrom` — from `list_items`, `get_capture` and the CLI alike.
+Every record a router handled answers `routerStatus {status, cycleId, at, missing}`, `links [{route, kind, destination}]` and, on a derived record, `derivedFrom` — from `list_items`, `get_capture` and the CLI alike. A record the media processor has read also carries a `context` stamp (`digest`, `signals`, `entities`, `screens`, `partial`) on `get_capture` and `list_captures`; the whole document is `get_record_context`'s, see [Media context](/cloud/media#the-context-document).
 
 ## What an agent cannot do
 

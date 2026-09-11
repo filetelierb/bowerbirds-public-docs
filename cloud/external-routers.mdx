@@ -64,6 +64,8 @@ The MCP door advertises these to a router-role token beside the [ordinary tools]
 | `derive_record` | A new record from a source — `split` or `augment` — with provenance, depth and the source's payload bytes copied, filed at a path or Bucket inside the route's destinations. The source is never written; landing in the same Bucket, the derived record is signed `routed` at birth |
 | `sign_items` (`items` shape) | The source's route marks and router mark with a status and one link per route |
 
+Two more tools read and compute a record's [media context](/cloud/media#mcp-tools): `get_record_context` (any token, free) answers the digest, signals, entities, screens and timed moments the platform's processor filed, or one part of it; `process_media` (router role only) computes it now and **charges the workspace's credits** — an external router's own model is free, the platform's processor is not. Read the context before deciding; ask for a part when the digest is not enough; process only a record that has no context.
+
 ### `derive_record`
 
 ```json
@@ -127,6 +129,9 @@ The [Bowerbirds plugin](/integrations/plugins) ships the loop as a command for C
   </Step>
   <Step title="Fetch the unsigned">
     `list_items` with `signed: false`, paging on `cursor`; `get_capture` for content and payload URLs.
+  </Step>
+  <Step title="Read the context">
+    `get_record_context` for a record that carries a `context` stamp: the digest and signals first, a `part` (`summary`, `segments`, `transcript`, `moments`) when they are not enough. A record with none is decided from its content and payloads; `process_media` computes one but spends the workspace's credits, so it is for a record that has no context, not a habit.
   </Step>
   <Step title="Decide per record, per route">
     One of `derive`, `create`, `append`, `link`, `none`, with a reason and a confidence. A record may fit several routes; several records may be one thing.

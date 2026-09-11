@@ -54,6 +54,7 @@
               "cloud/sync-and-sharing",
               "cloud/routers",
               "cloud/external-routers",
+              "cloud/media",
               "cloud/web-capture",
               "concepts/security"
             ]
@@ -128,6 +129,7 @@
             "pages": [
               "mcp/remote-tools",
               "cloud/external-routers",
+              "cloud/media",
               "reference/troubleshooting"
             ]
           }

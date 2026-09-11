@@ -1,0 +1,187 @@
+---
+title: "Media context"
+description: "The media processor reads a record's recordings, audio, PDFs and pictures before a router decides: chunks and limits, the context document, the router's media option, credits, the two doors, the CLI verb, the MCP tools and the rule chips."
+icon: "film"
+---
+
+A router that decides from a record's title and a couple of stills is guessing about a thirty-minute screen recording. The **media processor** reads the record's media first — video by segments, audio by the hour, a PDF whole, pictures in batches — and files what it learned as the record's **context**: a short digest, graded signals, the entities and screens it saw, and timed moments. Every router kind reads it; the agentic router's routes can look deeper on demand; a direct router can match on it with two rule chips. Read [Routers](/cloud/routers) first for what a cycle, a route and a dispatch are.
+
+## What the processor does
+
+<Steps>
+  <Step title="Probe">
+    Each media payload is measured before anything is spent: a recording's duration, a PDF's page count, an image's size. Payloads carry no duration of their own, so the probe is what the estimate and the chunk plan stand on.
+  </Step>
+  <Step title="Chunk">
+    The media is cut into pieces Bowerbirds AI can read in one call each (the table below). The bytes never leave the cloud's storage: each call names the object where it lives, and nothing is downloaded or re-uploaded to send it.
+  </Step>
+  <Step title="Extract">
+    One call per chunk answers a fixed shape: a summary, a transcript excerpt, timed moments, signals graded `high | medium | low | none` for `bug`, `feature`, `question`, `task`, `decision` and `other`, plus the entities, screens and quotes it noticed.
+  </Step>
+  <Step title="Reduce">
+    One call per record folds the chunk answers into the context document: a digest of at most 600 characters, a summary, the segments with their moments, and the merged signals, entities, screens and quotes.
+  </Step>
+  <Step title="File and cache">
+    The document is filed beside the record as the payload `context.json` (role `record-context`) and a small **stamp** is written on the record itself. The stamp carries the fingerprint of the payload set it was computed from, so a later cycle over an unchanged record processes nothing; a record whose payloads changed is read again.
+  </Step>
+</Steps>
+
+A **recording package** — video, audio, frames and notes filed together — is one context, not four: the video is read; the audio only when there is no video; the frames are skipped when the video exists; `notes.md` and any other text payload ride along as text. A record with no media at all (a note, a text-only capture) gets no context from a cycle; asking for one through the door below reads its title and content.
+
+## Chunks and limits
+
+| Media | One chunk | Limit |
+| --- | --- | --- |
+| Video | A 10-minute segment, at `low` resolution unless the router asks for `high` | Bounded by the router's `maxMinutesPerRecord` (default 60, at most 480). Past the cap the tail is skipped and the context is marked `partial` with the reason |
+| Audio | A 60-minute segment | The same minute cap; audio is read only when the record has no video |
+| PDF | The whole file | 50 MB and 3,000 pages. A larger PDF is refused with a note on the context rather than split, because a split loses the text layer's pagination |
+| Images | A batch of 20 | Every picture in the record, in batches |
+| Text payloads | Whole | 256 KB per payload; a longer one is cut with a note |
+
+Token rates behind the estimate: video about 100 tokens per second at `low` resolution and about 300 at `high`; audio 32 tokens per second; a PDF page 258 tokens; a picture 258 tokens. A recording's quality setting (720p, 1080p, 1440p) changes its upload size and storage, not its token cost: Bowerbirds AI samples the video at its own resolution.
+
+## The context document
+
+The whole document, as `GET …/context` answers it (schema `bowerbirds.record-context/1`):
+
+```json
+{
+  "version": "bowerbirds.record-context/1",
+  "fingerprint": "sha256:…",
+  "at": "2026-09-11T10:00:00Z",
+  "digest": "A walkthrough of the checkout flow: the coupon field rejects valid codes on Safari; the reviewer asks whether the cart total should update live.",
+  "summary": "…",
+  "segments": [
+    {
+      "label": "video-001.mp4 0:00–10:00",
+      "start": 0,
+      "end": 600,
+      "summary": "…",
+      "moments": [{ "t": 83.5, "what": "Coupon SAVE10 refused with 'invalid code'" }]
+    }
+  ],
+  "signals": { "bug": "high", "feature": "none", "question": "medium", "task": "none", "decision": "none", "other": "none" },
+  "entities": ["checkout", "coupon", "SAVE10"],
+  "screens": ["Cart", "Checkout"],
+  "quotes": ["I entered the code twice and it still says invalid"],
+  "tokens": 61234,
+  "chunks": 3,
+  "calls": 4,
+  "partial": false,
+  "note": "",
+  "capMinutes": 60,
+  "resolution": "low"
+}
+```
+
+- `segments[]` follow the record's own clock in seconds; a segment's `label` names the payload and the span. Image batches and PDFs are segments too, without a clock.
+- `partial` is `true` when the minute cap, a refused PDF or a failed chunk left something unread; `note` says which.
+- `tokens`, `chunks` and `calls` are what the document cost to compute — the same numbers the run record and the ledger carry.
+
+### The stamp
+
+The listing, the item bundle, and the MCP `get_capture` and `list_captures` answers carry the small half of the document as `context`, absent until a cycle or a recompute has read the record:
+
+```json
+"context": {
+  "at": "2026-09-11T10:00:00Z", "version": "bowerbirds.record-context/1", "tokens": 61234,
+  "digest": "…",
+  "signals": { "bug": "high", "feature": "none", "question": "medium", "task": "none", "decision": "none", "other": "none" },
+  "partial": false, "note": "…", "chunks": 3,
+  "entities": ["checkout", "coupon"], "screens": ["Cart", "Checkout"], "fingerprint": "sha256:…"
+}
+```
+
+`partial`, `note`, `chunks`, `entities`, `screens` and `fingerprint` are omitted when empty. The bucket-wide bundle sweep does not carry the stamp.
+
+### Parts
+
+`?part=` narrows the document to one slice; anything else is refused with `part must be one of summary, segments, transcript or moments`.
+
+| Part | Answers |
+| --- | --- |
+| `summary` | `version`, `at`, `fingerprint`, `digest`, `summary`, `signals`, `entities`, `screens`, `tokens`, `chunks`, `partial`, `note` |
+| `segments` | `{ "segments": [...] }` |
+| `transcript` | `{ "quotes": [...], "segments": [{ label, start, end, summary }] }` — the stored document keeps no verbatim transcript; excerpts are folded into the summaries and quotes |
+| `moments` | `{ "moments": [{ "t", "what", "segment" }] }`, every moment with the label of the segment it came from |
+
+## In a cycle
+
+The `media` stage runs after gather and before triage, for direct and agentic routers alike:
+
+1. **Pre-flight.** The probe's numbers price every gathered record that has no current context, on top of the plan's own estimate. If plan plus media would exceed the workspace balance or the router's month, media is switched **off for that cycle** with a note on the run — never a pause, never a parked cycle.
+2. **Process.** Each such record is read through the processor, charged under the run's feature and attributed to the job and the router. A record over its cap is filed `partial`; a record whose processing fails is a note on the run, not a failed cycle. The stage is bounded by a six-minute deadline.
+3. **Hand over.** The router's triage sees each record's `context {digest, signals, entities, screens, partial, note}` — never the whole document. An agentic router's triage reads the digest and the signals to decide which routes get the record and names the part that is theirs in the hint; every route's subagent holds a read tool, `get_record_context(recordId, part?)`, to look deeper before it answers. A route can turn the tool off with a grant on the reserved connector id `builtin`: `"connectors": [{ "connectorId": "builtin", "tools": { "disabled": ["get_record_context"] } }]`.
+
+The run record's `stages[]` gains `{ "name": "media", "tokens": N, "media": { "records", "processed", "partial", "skipped", "failed" } }`, and its notes carry one sentence per skipped, partial or failed record.
+
+## The router's media option
+
+Every router document carries a `media` option, filled with defaults on create and update:
+
+```json
+"media": { "process": "auto", "videoResolution": "low", "maxMinutesPerRecord": 60 }
+```
+
+| Field | Values | Meaning |
+| --- | --- | --- |
+| `process` | `auto` (default), `off` | `auto` reads every gathered record's media before the cycle plans; `off` skips the stage for this router |
+| `videoResolution` | `low` (default), `high` | About 100 tokens per second of video, or about 300. `high` is for recordings whose detail matters — small text, dense screens |
+| `maxMinutesPerRecord` | 1 … 480, default 60 | The most timed media one record may cost; past it the context is `partial` and says so |
+
+Words are trimmed and lowercased on write; an update that omits a field keeps it, one that blanks a field refills the default; a router filed before the option existed reads as `auto`, `low`, 60. Anything else is refused by name — `media.process is "x": it is "auto" (…) or "off"`.
+
+## Credits
+
+- The **pre-flight** prices media from the probe before anything is spent, and reserves it out of the cycle's budget; the plan estimate and the media estimate are one number against the balance and the router's `budget.monthlyCredits`.
+- Media calls are **metered like any other model call**: one ledger line per call, attributed to the job and the router, so a cycle's cost on its run record is exact. Media tokens are also summed on the run (`mediaTokens`) and on the router's month.
+- `GET /usage/routers` shows media tokens per router for the month and per run; the runs door carries `mediaTokens` on every run, and `bowerbirds cloud routers runs <id> --cost` lists what each cycle cost.
+- A **recompute** through the door below (`POST …/context`, `process_media`, `--refresh`) charges the workspace by the caller, with no job or router attached; a recompute over an unchanged record answers from cache at no cost unless forced.
+- A workspace **paused for credits** refuses recomputes with `402 routers_paused`; a storage pause lets them through.
+
+## The two doors
+
+```text
+GET  /buckets/{owner}/{slug}/items/{id}/context[?part=summary|segments|transcript|moments]
+POST /buckets/{owner}/{slug}/items/{id}/context   {"force": false, "videoResolution": "low|high", "maxMinutesPerRecord": 0}
+```
+
+**GET** is open to any role that can read the Bucket — a session, a Bucket or workspace read token, a router token — and answers the whole document or a part. Refusals: `403` for a stranger; `404 no item`; `404 {"error": "no_context", "hint": "…"}` when the record has no `context.json` yet or the stored document is of a version this cloud does not read.
+
+**POST** recomputes now through the platform's processor and answers the whole document. It charges the workspace by the caller, so who may call is narrower: an owner's or administrator's session, or a router token. The body is optional; empty means the defaults, `force` recomputes even when the stored context matches the payloads, `maxMinutesPerRecord` at zero means the default. Refusals: `403 admin_required` for a member or a Bucket contributor; `403 router_role_required` for a `read`, `contribute` or `admin` agent token; `400` for bad JSON, `videoResolution must be low or high`, `maxMinutesPerRecord must be zero (the default) or positive`; `402 {"error": "routers_paused", "reason": "credits"}`; `503 media_unconfigured` when the deployment has no processor; `502 processing the record's media: …` when a call failed — the calls made are still charged.
+
+## From the CLI
+
+```sh
+bowerbirds cloud records context <owner/slug> <record-id> [--part summary|segments|transcript|moments] [--refresh] [--json]
+```
+
+Without `--part`, the whole document is rendered: the digest, the signals as chips, the segments with their moments on an `m:ss` or `h:mm:ss` clock. With `--part`, the door's own slice is printed as JSON. `--refresh` recomputes through the cloud's processor and spends the workspace's credits — an owner's or administrator's session, or a router token; the door's refusal is the sentence printed otherwise. `--json` prints the document as it came.
+
+## MCP tools
+
+The remote door advertises two more tools beside the [ordinary](/mcp/remote-tools) and [routing](/cloud/external-routers#the-five-routing-tools) ones:
+
+| Tool | Who | What it does |
+| --- | --- | --- |
+| `get_record_context {id, slug?, owner?, part?}` | Any agent token; free | Forwards the GET: the digest, signals, entities, screens, quotes and the segments with timed moments, or one `part`. A record with no context answers a `no_context` error, which is data, not a failure |
+| `process_media {id, slug?, owner?, force?, videoResolution?, maxMinutesPerRecord?}` | `router` role only | Forwards the POST and charges the workspace's credits. Refused with `router_role` before any request from a `read`, `contribute` or `admin` token; relays `routers_paused` |
+
+An [external router](/cloud/external-routers) reads the context the same way a native route does: `get_record_context` before deciding, the digest and signals first, a part when they are not enough. `process_media` is for a record that has no context yet — an external router's own model is free, but the platform's processor is platform credits. The [plugin](/integrations/plugins)'s `/bowerbirds-route` command and the `bowerbirds-records` skill say the same.
+
+## The rule chips
+
+A direct route's `rules.filters` gains two chips over the record's context, beside `kind`, `path`, `tag`, `keyword` and `ageDays`:
+
+```json
+{ "field": "context", "op": "has",     "value": "checkout" }
+{ "field": "context", "op": "hasNot",  "value": "checkout" }
+{ "field": "signal",  "op": "atLeast", "value": { "kind": "bug", "level": "medium" } }
+```
+
+- `context` with `has` or `hasNot` matches a keyword, case-insensitively, over the stamp's digest, entities and screens.
+- `signal` with `atLeast` matches a graded signal at or above a level. Kinds are `bug`, `feature`, `question`, `task` and `decision` (`other` is not routable); levels are `low`, `medium` and `high`, in that order — `none` is never a threshold. The typed spellings `"bug >= medium"`, `"bug ≥ medium"` and `"bug medium"` are accepted on write and stored as the object.
+- A record **without a context never matches either chip**, `hasNot` included: a router with `media.process: off` sees no record pass a context chip.
+- Both chips are **route rules only**. On a link's conditions they are refused: `field "context" reads a record's context, which only a route's rules can see — put it under routes[].rules.filters`.
+
+The routes editor in the Mac and iOS apps offers both chips beside the others, and the record detail shows a **Context** card — the digest, the signal chips, the segments with their moments — with a Reprocess action that is the POST door.

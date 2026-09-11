@@ -78,7 +78,8 @@ Routers replaced Flows on 11 September 2026. Nothing was migrated: a flow's goal
 - **Destinations** are the allowlist the gate enforces: `paths` (`bucket/path` or `bucket/path/*`) and `buckets` of the workspace a derivation may land in, and `external` targets inside a linked connector (a Linear team, a GitHub repository, a Notion database). A direct route's external destination also names the `tool` it creates with.
 - **Connectors and tool grants.** A route links the workspace connectors it needs and enables or disables each tool by name. Tools in neither list take the connector's default: read-only tools on, destructive tools off, everything off when the server annotates nothing. The enabled read tools are what the route holds while it looks; the enabled write tools bound what the applier may call for that route.
 - **Description and goal** are written for Bowerbirds AI: the description is how a record is delegated here, the goal is what the route then tries to do with it.
-- **Rules** are prose plus filter chips the gate checks deterministically: `kind` (`is`, `isNot`, `in`, `notIn`), `path` (`startsWith`), `tag` and `keyword` (`has`, `hasNot`), `ageDays` (`atMost`). A direct route with no chips is the catch-all row.
+- **Rules** are prose plus filter chips the gate checks deterministically: `kind` (`is`, `isNot`, `in`, `notIn`), `path` (`startsWith`), `tag` and `keyword` (`has`, `hasNot`), `ageDays` (`atMost`), and over the record's [media context](/cloud/media#the-rule-chips), `context` (`has`, `hasNot`) and `signal` (`atLeast`). A direct route with no chips is the catch-all row.
+- **Media** is the router's option for the [media processor](/cloud/media#the-routers-media-option): `"media": { "process": "auto", "videoResolution": "low", "maxMinutesPerRecord": 60 }` reads every gathered record's recordings, audio, PDFs and pictures before the cycle plans, so a route decides from a digest and graded signals rather than a title and a few stills.
 - **Skills** are workspace skills by id, snapshotted into the run. A plugin can ship a route template with all of this plus the connector it expects; see [Plugins](/integrations/plugins).
 - **Trust** is earned per route. Links, appends and derivations run unattended from the first cycle. Creating an external item asks a person until the route's first accepted create, then runs unattended.
 - **Direct routes only:** `fanOut: true` lets a matched record continue to the routes after it; `format: { "template": "…", "prompt": "…" }` shapes what reaches the destination — a template over `.Title`, `.Content`, `.Kind`, `.Path`, `.Tags`, `.Comments` is rendered with no model call; a prompt asks Bowerbirds AI and is metered like any call.
@@ -105,7 +106,8 @@ flowchart LR
   A[Record arrives, schedule ticks, or a person runs it] --> G[Gather: the Bucket minus what the router signed at the current version]
   G --> C{Credits and storage cover it?}
   C -->|No| P[Pause: sources freeze as pending, inbox says what is missing]
-  C -->|Yes| T[Triage: rule table, or Bowerbirds AI delegates each record to the routes that fit]
+  C -->|Yes| M[Media: recordings, audio, PDFs and pictures become each record's context]
+  M --> T[Triage: rule table, or Bowerbirds AI delegates each record to the routes that fit]
   T --> R[Routes look at their destinations and propose]
   R --> K[Gate validates every dispatch]
   K --> W[Applier writes once, then signs route marks and the router mark]
@@ -113,12 +115,13 @@ flowchart LR
 ```
 
 1. **Gather.** The Bucket's records minus those the router already signed at their current fingerprint. Records with partial route marks from an earlier cycle go only to the routes still missing.
-2. **Pre-flight.** Credits and storage are checked against the record count before anything is spent.
-3. **Triage.** A direct router evaluates its rule table. An agentic router delegates each record to every route whose description fits and hands each route its whole batch, so three captures about one bug are seen together.
-4. **Route.** Each route searches its destinations with its enabled read tools, groups what belongs together, and answers per record.
-5. **Gate.** Every dispatch is validated; see the table below. The plan that survives is the plan that runs.
-6. **Apply and sign.** One applier writes: derived records with provenance and copied bytes, external items through the linked connector, each checked against the source's existing links so a retry never creates twice. It signs a route mark per route with the destination item's id, then the router mark with its status once every delegated route reported.
-7. **Report.** Exceptions become attention rows; the ledger gets one line per model turn with the job id; the run record holds the dispatches, the gate's decisions and the cost.
+2. **Pre-flight.** Credits and storage are checked against the record count — and the media the records carry — before anything is spent.
+3. **Media.** Each gathered record with media and no current context is read by the [media processor](/cloud/media): its digest, signals, entities and screens are what triage sees. A record already read at its current version costs nothing again.
+4. **Triage.** A direct router evaluates its rule table. An agentic router reads each record's digest and signals, delegates it to every route whose description fits with a hint of which part is theirs, and hands each route its whole batch, so three captures about one bug are seen together.
+5. **Route.** Each route searches its destinations with its enabled read tools, reads deeper into a record's context with `get_record_context` when the digest is not enough, groups what belongs together, and answers per record.
+6. **Gate.** Every dispatch is validated; see the table below. The plan that survives is the plan that runs.
+7. **Apply and sign.** One applier writes: derived records with provenance and copied bytes, external items through the linked connector, each checked against the source's existing links so a retry never creates twice. It signs a route mark per route with the destination item's id, then the router mark with its status once every delegated route reported.
+8. **Report.** Exceptions become attention rows; the ledger gets one line per model turn with the job id; the run record holds the dispatches, the gate's decisions, the media stage's counts and the cost.
 
 ## What the gate does
 
@@ -176,6 +179,7 @@ A move with an audit trail and a grace period is exactly a derivation, a `routed
 - The **budget pre-flight** compares the workspace balance and the router's `budget.monthlyCredits` against the gathered records before spending anything. Manual runs honour the same caps.
 - A **spend guard** stops a cycle when the next model call is unaffordable; the partial plan is filed and marked, never an overdraft.
 - Every ledger line carries the **job id**; a run's cost is summed exactly on its run record. Reclaimed runs are not re-charged.
+- The **media stage** is priced in the pre-flight from a probe of each record's media. When plan plus media would exceed the balance or the router's month, media is switched off for that cycle with a note, never a pause; see [Media context](/cloud/media#credits).
 - Out of credits or out of storage **pauses every router of the workspace** (`routersPaused {reason: credits | storage, since}` on the workspace). The sources the paused cycle gathered stay `pending` and render as frozen in both apps; an inbox notice says what to buy or free. A top-up or freed space enqueues the resume by itself, and the resumed cycle re-delegates only the routes still missing, so no dispatch is duplicated.
 
 `bowerbirds cloud routers run <id>` exits with the parked reason when a cycle pauses; `bowerbirds cloud routers runs <id> --cost` lists what each cycle cost.
