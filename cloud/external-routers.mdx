@@ -19,7 +19,7 @@ curl -X POST "$BOWERBIRDS_API/orgs/tokens" \
   -d '{"role": "router", "label": "claude code, feedback bucket"}'
 ```
 
-The token is shown once; keep its sixteen-character `id` for the router document. Today neither the browser approval page nor `bowerbirds cloud tokens mint --role` offers the `router` role, so the door is the way to mint it. Give the token to the agent as its bearer header ([Clients without OAuth](/mcp/remote-server#clients-without-oauth)) or to the CLI with `--token`.
+The token is shown once; keep its sixteen-character `id` for the router document. The same role is available without curl: `bowerbirds cloud tokens mint --label "claude code" --role router` mints it from a signed-in CLI, `bowerbirds cloud tokens login --role router` obtains it through the browser approval page (the page preselects Router and says what the role may do), and Developer Tools in the app offers Router in its role picker. Give the token to the agent as its bearer header ([Clients without OAuth](/mcp/remote-server#clients-without-oauth)) or to the CLI with `--token`.
 
 ## Attach the router
 
@@ -46,6 +46,8 @@ A router of kind `external` names its brain under `external.tokenId`; the cloud 
 
 ```sh
 bowerbirds cloud routers create --file router.json
+# or, without a file:
+bowerbirds cloud routers create --kind external --token <token-id> --name "Feedback, routed by my agent" --bucket me/feedback
 ```
 
 The Routers tab lists it with the client's name and zero credits. The fleet never runs an external router: a scheduled or arrival tick is refused before any model call, because its records dispatch through the agent that drives it.

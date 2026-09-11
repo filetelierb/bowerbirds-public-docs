@@ -20,7 +20,7 @@ Use `bowerbirds cloud logout` to remove it.
 A coding agent should not act as you. Log the CLI in as an agent through OAuth: the browser signs you in, you pick the workspace and the role, and the CLI receives a short-lived access token and a rotating refresh token.
 
 ```sh
-bowerbirds cloud tokens login [--scope read|contribute|admin] [--no-browser]
+bowerbirds cloud tokens login [--role read|contribute|admin|router] [--no-browser]   # --scope is an alias
 bowerbirds cloud tokens status
 bowerbirds cloud tokens logout
 ```
@@ -122,6 +122,7 @@ A router sits on one Bucket and dispatches what lands there; see [Routers](/clou
 bowerbirds cloud routers list
 bowerbirds cloud routers show <router-id>
 bowerbirds cloud routers create --file router.json
+bowerbirds cloud routers create --kind external --token <token-id> --name <name> --bucket <owner/slug>
 bowerbirds cloud routers update <router-id> --file router.json
 bowerbirds cloud routers delete <router-id>
 bowerbirds cloud routers run <router-id> [--items id,id] [--follow]

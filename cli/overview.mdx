@@ -34,7 +34,7 @@ bowerbirds cloud buckets list
 A coding agent logs the CLI in through OAuth instead of using your session: the browser signs you in and asks which workspace and role to grant, and the CLI receives a credential of its own that refreshes itself.
 
 ```sh
-bowerbirds cloud tokens login --scope contribute
+bowerbirds cloud tokens login --role contribute
 bowerbirds cloud tokens status
 bowerbirds cloud records list me/qa --unsigned --json
 ```
