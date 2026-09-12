@@ -6,7 +6,7 @@ icon: "rectangle-list"
 
 Add `--json` to supported commands. Arguments in angle brackets are required.
 
-## Server and organization
+## Server and workspace
 
 ```text
 bowerbirds server info
@@ -77,7 +77,7 @@ bowerbirds cloud logout
 bowerbirds cloud whoami
 bowerbirds cloud devices
 bowerbirds cloud signout-all
-bowerbirds cloud orgs [list|use|members]
+bowerbirds cloud workspaces [list|use|members]
 bowerbirds cloud buckets [list|create|delete]
 bowerbirds cloud push <bucket-slug> [--to owner/slug]
 bowerbirds cloud pull <owner/slug> [--as local-name]
@@ -118,9 +118,9 @@ bowerbirds cloud web-captures <list|mint|rename|origins|set-disabled|set-recordi
 bowerbirds cloud usage
 ```
 
-`records context` reads what the [media processor](/cloud/media#from-the-cli) learned about a record; `--refresh` recomputes it and spends the organization's credits.
+`records context` reads what the [media processor](/cloud/media#from-the-cli) learned about a record; `--refresh` recomputes it and spends the workspace's credits.
 
-Use `--org <id-or-slug>` with cloud commands to target an organization without switching. Add `--token <bbt_…>` (or set `BOWERBIRDS_TOKEN`) to act as an agent token instead of the signed-in person; a `tokens login` credential is used when neither is set. `tokens mint --role` offers `read`, `contribute` and `admin`; the `router` role is minted through the tokens door for now, see [External routers](/cloud/external-routers#the-router-role).
+Use `--workspace <id-or-slug>` with cloud commands to target a workspace without switching. Add `--token <bbt_…>` (or set `BOWERBIRDS_TOKEN`) to act as an agent token instead of the signed-in person; a `tokens login` credential is used when neither is set. `tokens mint --role` offers `read`, `contribute` and `admin`; the `router` role is minted through the tokens door for now, see [External routers](/cloud/external-routers#the-router-role).
 
 ## MCP
 

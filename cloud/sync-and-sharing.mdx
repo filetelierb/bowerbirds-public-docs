@@ -1,18 +1,18 @@
 ---
 title: "Sync and sharing"
-description: "Move selected Buckets between local stores and a cloud organization."
+description: "Move selected Buckets between local stores and a cloud workspace."
 icon: "cloud-arrow-up"
 ---
 
 Cloud sync is per-Bucket and opt-in. Private Unsorted, Trash, cloud-origin records, and provenance payloads disabled for sync are excluded from normal local push.
 
-## Sign in and select an organization
+## Sign in and select a workspace
 
 ```sh
 bowerbirds cloud login
 bowerbirds cloud whoami
-bowerbirds cloud orgs list
-bowerbirds cloud orgs use <id-or-slug>
+bowerbirds cloud workspaces list
+bowerbirds cloud workspaces use <id-or-slug>
 ```
 
 ## Push and pull
@@ -54,5 +54,5 @@ If the email does not yet belong to an account, the grant waits and is claimed a
 | owner | ✓ | ✓ | ✓, plus Bucket ownership operations |
 
 <Note>
-  Add `--org <id-or-slug>` to cloud commands when automation must target an organization without changing the device's active selection.
+  Add `--workspace <id-or-slug>` to cloud commands when automation must target a workspace without changing the device's active selection.
 </Note>

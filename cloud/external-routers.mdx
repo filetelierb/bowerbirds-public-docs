@@ -4,16 +4,16 @@ description: "Make your own coding agent a Bucket's router: the router role, the
 icon: "robot"
 ---
 
-An **external router** is a router of kind `external` whose brain is your own agent — Claude Code, Codex or any MCP client — holding an organization token with the `router` role. It runs the same loop a native router runs, on your model with your tools, at zero platform credits, and the records end up with the same route marks, router status and destination links. Read [Routers](/cloud/routers) first for what routes, marks and statuses are.
+An **external router** is a router of kind `external` whose brain is your own agent — Claude Code, Codex or any MCP client — holding a workspace token with the `router` role. It runs the same loop a native router runs, on your model with your tools, at zero platform credits, and the records end up with the same route marks, router status and destination links. Read [Routers](/cloud/routers) first for what routes, marks and statuses are.
 
 ## The router role
 
 A token with the `router` role can **add and sign only**: it fetches records, files captures and notes, derives records, and signs route and router marks. The move, trash, restore, bulk-trash, purge and edit doors refuse it by name (`403 router_role`), so a routing agent cannot damage the Bucket it routes even by mistake.
 
-Mint one as an organization owner or administrator:
+Mint one as a workspace owner or administrator:
 
 ```sh
-curl -X POST "$BOWERBIRDS_API/orgs/tokens" \
+curl -X POST "$BOWERBIRDS_API/workspaces/tokens" \
   -H "Authorization: Bearer <your session>" \
   -H "Content-Type: application/json" \
   -d '{"role": "router", "label": "claude code, feedback bucket"}'
@@ -23,7 +23,7 @@ The token is shown once; keep its sixteen-character `id` for the router document
 
 ## Attach the router
 
-A router of kind `external` names its brain under `external.tokenId`; the cloud verifies on every write that the token holds the `router` role, belongs to this organization and is not revoked, and stamps the client's name from the grant.
+A router of kind `external` names its brain under `external.tokenId`; the cloud verifies on every write that the token holds the `router` role, belongs to this workspace and is not revoked, and stamps the client's name from the grant.
 
 ```json
 {
@@ -64,7 +64,7 @@ The MCP door advertises these to a router-role token beside the [ordinary tools]
 | `derive_record` | A new record from a source — `split` or `augment` — with provenance, depth and the source's payload bytes copied, filed at a path or Bucket inside the route's destinations. The source is never written; landing in the same Bucket, the derived record is signed `routed` at birth |
 | `sign_items` (`items` shape) | The source's route marks and router mark with a status and one link per route |
 
-Two more tools read and compute a record's [media context](/cloud/media#mcp-tools): `get_record_context` (any token, free) answers the digest, signals, entities, screens and timed moments the platform's processor filed, or one part of it; `process_media` (router role only) computes it now and **charges the organization's credits** — an external router's own model is free, the platform's processor is not. Read the context before deciding; ask for a part when the digest is not enough; process only a record that has no context.
+Two more tools read and compute a record's [media context](/cloud/media#mcp-tools): `get_record_context` (any token, free) answers the digest, signals, entities, screens and timed moments the platform's processor filed, or one part of it; `process_media` (router role only) computes it now and **charges the workspace's credits** — an external router's own model is free, the platform's processor is not. Read the context before deciding; ask for a part when the digest is not enough; process only a record that has no context.
 
 ### `derive_record`
 
@@ -131,7 +131,7 @@ The [Bowerbirds plugin](/integrations/plugins) ships the loop as a command for C
     `list_items` with `signed: false`, paging on `cursor`; `get_capture` for content and payload URLs.
   </Step>
   <Step title="Read the context">
-    `get_record_context` for a record that carries a `context` stamp: the digest and signals first, a `part` (`summary`, `segments`, `transcript`, `moments`) when they are not enough. A record with none is decided from its content and payloads; `process_media` computes one but spends the organization's credits, so it is for a record that has no context, not a habit.
+    `get_record_context` for a record that carries a `context` stamp: the digest and signals first, a `part` (`summary`, `segments`, `transcript`, `moments`) when they are not enough. A record with none is decided from its content and payloads; `process_media` computes one but spends the workspace's credits, so it is for a record that has no context, not a habit.
   </Step>
   <Step title="Decide per record, per route">
     One of `derive`, `create`, `append`, `link`, `none`, with a reason and a confidence. A record may fit several routes; several records may be one thing.

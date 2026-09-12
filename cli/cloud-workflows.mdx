@@ -17,7 +17,7 @@ Use `bowerbirds cloud logout` to remove it.
 
 ## Work as an agent
 
-A coding agent should not act as you. Log the CLI in as an agent through OAuth: the browser signs you in, you pick the organization and the role, and the CLI receives a short-lived access token and a rotating refresh token.
+A coding agent should not act as you. Log the CLI in as an agent through OAuth: the browser signs you in, you pick the workspace and the role, and the CLI receives a short-lived access token and a rotating refresh token.
 
 ```sh
 bowerbirds cloud tokens login [--role read|contribute|admin|router] [--no-browser]   # --scope is an alias
@@ -40,7 +40,7 @@ bowerbirds cloud records sign me/qa --ids <id,id>
 bowerbirds cloud records unsign me/qa --ids <id,id>
 ```
 
-Locations are `owner/slug[/directory/path]`; `me` is the token's organization. `--signed` and `--unsigned` filter on the token's own mark, and `--json` answers `signed` on every row. `records context` reads what the [media processor](/cloud/media) learned about a recording, audio, PDF or set of pictures; `--refresh` recomputes it and spends the organization's credits. See [Agent tokens](/mcp/agent-tokens) for minting, listing and revoking:
+Locations are `owner/slug[/directory/path]`; `me` is the token's workspace. `--signed` and `--unsigned` filter on the token's own mark, and `--json` answers `signed` on every row. `records context` reads what the [media processor](/cloud/media) learned about a recording, audio, PDF or set of pictures; `--refresh` recomputes it and spends the workspace's credits. See [Agent tokens](/mcp/agent-tokens) for minting, listing and revoking:
 
 ```sh
 bowerbirds cloud tokens mint --label "ci reviewer" --role contribute [--bucket me/qa]
@@ -48,16 +48,16 @@ bowerbirds cloud tokens list [--bucket me/qa]
 bowerbirds cloud tokens revoke <id> [--bucket me/qa]
 ```
 
-## Organizations
+## Workspaces
 
 ```sh
-bowerbirds cloud orgs list
-bowerbirds cloud orgs create "Acme Research"
-bowerbirds cloud orgs use acme-research
-bowerbirds cloud orgs members acme-research
+bowerbirds cloud workspaces list
+bowerbirds cloud workspaces create "Acme Research"
+bowerbirds cloud workspaces use acme-research
+bowerbirds cloud workspaces members acme-research
 ```
 
-Add `--org <id-or-slug>` to a cloud command to target an organization without changing the device's active organization.
+Add `--workspace <id-or-slug>` to a cloud command to target a workspace without changing the device's active workspace. A workspace id is spelled `org_…` — `org_p_…` for a personal workspace — and that spelling stays: the prefix is RevenueCat's subscriber identity; the concept is a workspace.
 
 ## Push, pull, and sync
 
@@ -143,7 +143,7 @@ An external router — your own agent as the Bucket's brain — is created the s
 
 ## Connectors, plugins and skills
 
-What a router can reach. A **connector** is the organization's one connection to an MCP server; a **plugin** installs skills, route templates and connector declarations from a public GitHub repository; a **skill** is an organization document a route snapshots into its run. See [Plugins](/integrations/plugins).
+What a router can reach. A **connector** is the workspace's one connection to an MCP server; a **plugin** installs skills, route templates and connector declarations from a public GitHub repository; a **skill** is a workspace document a route snapshots into its run. See [Plugins](/integrations/plugins).
 
 ```sh
 bowerbirds cloud mcp-servers list
@@ -168,13 +168,13 @@ bowerbirds cloud skills update <skill-id> [--file body.md] [--description "<text
 bowerbirds cloud skills delete <skill-id>
 ```
 
-`mcp-servers add` with a URL alone registers the connector as `needs-connecting` and answers how to finish: a browser link when the server offers OAuth, or the `--token` form when it does not. Plugin verbs are for an organization owner or administrator.
+`mcp-servers add` with a URL alone registers the connector as `needs-connecting` and answers how to finish: a browser link when the server offers OAuth, or the `--token` form when it does not. Plugin verbs are for a workspace owner or administrator.
 
 ## Answer an RFI
 
 ```sh
 bowerbirds cloud rfis list --state open
-bowerbirds cloud rfis answer <rfi-id> "Use the production organization"
+bowerbirds cloud rfis answer <rfi-id> "Use the production workspace"
 ```
 
 Processing resumes after the answer is filed. A router's questions live in its attention queue (`cloud routers attention`) and are answered there.

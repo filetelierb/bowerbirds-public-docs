@@ -4,7 +4,7 @@ description: "The tools the remote MCP door offers, and the two ideas behind the
 icon: "toolbox"
 ---
 
-A Bucket token acts on its Bucket only. An organization token names the Bucket on every call with `slug` (and `owner` when it is not the organization itself).
+A Bucket token acts on its Bucket only. A workspace token names the Bucket on every call with `slug` (and `owner` when it is not the workspace itself).
 
 | Tool | Purpose |
 | --- | --- |
@@ -13,13 +13,13 @@ A Bucket token acts on its Bucket only. An organization token names the Bucket o
 | `list_captures` | The older text-only sweep (`limit`, `since`) |
 | `list_directories` | The Bucket's directory paths, for filing and moving |
 | `add_capture` | File a record and receive one upload URL per declared payload |
-| `move_items` | Move records to a directory, in this Bucket or another one of the organization |
+| `move_items` | Move records to a directory, in this Bucket or another one of the workspace |
 | `trash_items` | Move records to the Trash; a person can restore them |
 | `sign_items` / `unsign_items` | Put this token's mark on records, or take it off |
 | `add_finding` | A short note at the Bucket root |
 | `list_routes`, `claim_cycle`, `renew_cycle`, `release_cycle`, `derive_record`, `sign_items` with `items` | The routing tools, advertised to a token with the `router` role; see below |
 | `get_record_context` | Read what the media processor learned about a record — digest, graded signals, entities, screens, timed moments — or one `part` of it; free, any role. See [Media context](/cloud/media#mcp-tools) |
-| `process_media` | Compute a record's context now through the platform's processor; `router` role only, charges the organization's credits |
+| `process_media` | Compute a record's context now through the platform's processor; `router` role only, charges the workspace's credits |
 
 ## `list_items`
 
@@ -104,4 +104,4 @@ Every record a router handled answers `routerStatus {status, cycleId, at, missin
 
 ## What an agent cannot do
 
-Mint credentials wider than itself, read the Trash, read another organization, switch organizations, or reach a Bucket that takes submissions through a publishable web key only. Every refusal names its reason.
+Mint credentials wider than itself, read the Trash, read another workspace, switch workspaces, or reach a Bucket that takes submissions through a publishable web key only. Every refusal names its reason.
