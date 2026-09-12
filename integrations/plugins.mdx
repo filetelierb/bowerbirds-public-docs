@@ -1,13 +1,13 @@
 ---
 title: "Plugins"
-description: "One repository, two audiences: a client plugin for Claude Code and Codex, and a workspace plugin that installs skills, route templates and connector declarations."
+description: "One repository, two audiences: a client plugin for Claude Code and Codex, and an organization plugin that installs skills, route templates and connector declarations."
 icon: "puzzle-piece"
 ---
 
 The public repository [github.com/filetelierb/bowerbirds-plugins](https://github.com/filetelierb/bowerbirds-plugins) is two plugins in one:
 
 - a **client plugin** for Claude Code and for Codex and ChatGPT that bundles the remote MCP door, the `bowerbirds-records` skill and the routing command;
-- a **workspace plugin** — `bowerbirds.plugin.json` at the repository root — that a Bowerbirds workspace installs to receive skills, route templates and the connectors those templates expect.
+- a **organization plugin** — `bowerbirds.plugin.json` at the repository root — that a Bowerbirds organization installs to receive skills, route templates and the connectors those templates expect.
 
 ## Claude Code
 
@@ -31,9 +31,9 @@ The `codex/` directory is an Agent Plugin: `plugin.json`, `mcp.json` naming the 
   If your client cannot install plugins, add the endpoint by hand as described in [Connect a client](/mcp/remote-server).
 </Note>
 
-## Install into a workspace
+## Install into an organization
 
-A workspace plugin is any **public GitHub repository** with `bowerbirds.plugin.json` at its root. A workspace owner or administrator installs it by source and optional ref:
+An organization plugin is any **public GitHub repository** with `bowerbirds.plugin.json` at its root. An organization owner or administrator installs it by source and optional ref:
 
 ```sh
 bowerbirds cloud plugins install filetelierb/bowerbirds-plugins [--ref main]
@@ -46,9 +46,9 @@ bowerbirds cloud plugins remove <plugin-id>
 
 Installing brings:
 
-- **Skills** as workspace skills with an `origin {plugin, version}`. A hand-authored skill under a name the plugin ships refuses the install rather than being overwritten.
+- **Skills** as organization skills with an `origin {plugin, version}`. A hand-authored skill under a name the plugin ships refuses the install rather than being overwritten.
 - **Route templates**, recorded whole on the installed plugin and listed by `plugins templates`, so a route in the [router editor](/cloud/routers) is one tap.
-- **Connector declarations**: each server the templates expect lands in the workspace's connector registry in the state `needs-connecting`, with no secret. A URL the workspace already connects reuses that connector instead.
+- **Connector declarations**: each server the templates expect lands in the organization's connector registry in the state `needs-connecting`, with no secret. A URL the organization already connects reuses that connector instead.
 
 Upgrade is a reinstall at a newer commit; what the new manifest no longer ships is taken back. Remove takes only what the plugin brought: a connector somebody connected with their own credential stays. The same plugin name from another source is refused.
 
@@ -91,13 +91,13 @@ Upgrade is a reinstall at a newer commit; what the new manifest no longer ships 
 | `skills[]` | Paths inside the repository to `SKILL.md` files (at most 32). The frontmatter's `name` is the skill id, its `description` the cue, everything after the frontmatter the body |
 | `routeTemplates[]` | At most 32. `kind` is `direct` or `agentic` (default). `description`, `goal` and `rules` are prose for the route; `skills` name skills this plugin ships; `destinations` use the route destination grammar with placeholders a person fills; `format.template` is a direct route's formatting template |
 | `routeTemplates[].connector` | `server` is a connector declared in the same manifest, by name, or an https URL; `expectedTools` are the tools the template relies on; `grant.enabled` and `grant.disabled` seed the route's tool grant. A tool in both lists refuses the manifest |
-| `connectors[]` | At most 16. `name`, an https `url`, `transport` (`http` default, or `sse`), `auth` (`oauth` default, `token`, or `none`). An optional `oauthClient {clientId, scopes}` is a pre-registered public client for servers without dynamic registration. Two names for one URL are refused: a workspace connects to a server once |
+| `connectors[]` | At most 16. `name`, an https `url`, `transport` (`http` default, or `sse`), `auth` (`oauth` default, `token`, or `none`). An optional `oauthClient {clientId, scopes}` is a pre-registered public client for servers without dynamic registration. Two names for one URL are refused: an organization connects to a server once |
 
 A manifest is at most 256 KB and every text field at most 8 KB. Unknown fields are ignored, so a newer manifest installs on an older cloud with what the cloud knows. Nothing in a manifest is a secret, because nothing in a public repository can be.
 
 ## Connectors
 
-A **connector** is the workspace's one connection to an MCP server: its credential, its health, and the tool catalogue the server advertises with each tool's annotations (`readOnly`, `destructive`, `annotated`). Routes link connectors and grant tools by name; see [Routers](/cloud/routers#what-a-route-is).
+A **connector** is the organization's one connection to an MCP server: its credential, its health, and the tool catalogue the server advertises with each tool's annotations (`readOnly`, `destructive`, `annotated`). Routes link connectors and grant tools by name; see [Routers](/cloud/routers#what-a-route-is).
 
 ```sh
 bowerbirds cloud mcp-servers list
@@ -110,6 +110,6 @@ bowerbirds cloud mcp-servers remove <connector-id>
 ```
 
 - `add` with a URL alone registers the connector as `needs-connecting` and says how to finish: a browser link when the server offers OAuth (an owner or administrator opens it), or the `--token` form when it does not.
-- Registering the same server twice is refused with the name of the connector the workspace already has.
+- Registering the same server twice is refused with the name of the connector the organization already has.
 - `health` reports `ok`, `expiring` (credential ends within seven days), `expired`, `revoked` or `unreachable`; a daily sweep probes every connected server, refreshes rotating tokens, and raises one "Reconnect" item in the inbox when a connector leaves `ok`.
 - `remove` revokes the credential at the server where it can, and routes that link the connector refuse at apply time until it is connected again.

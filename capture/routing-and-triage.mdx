@@ -10,16 +10,16 @@ Routing chooses where a new capture is born. Classification is optional later wo
 
 ## Device routing
 
-When “Route new captures to Triage” is off, captures go to private Unsorted. When it is on, eligible captures are filed into the workspace's shared Triage shelf and synced when possible.
+When “Route new captures to Triage” is off, captures go to private Unsorted. When it is on, eligible captures are filed into the organization's shared Triage shelf and synced when possible.
 
-The switch is per person and device, defaults to off, and affects future captures only. Enabling it warns that new eligible captures will enter a shared workspace location.
+The switch is per person and device, defaults to off, and affects future captures only. Enabling it warns that new eligible captures will enter a location shared with the organization.
 
-Clipboard history is excluded from this switch because copying text is not explicit consent to publish it to a workspace.
+Clipboard history is excluded from this switch because copying text is not explicit consent to publish it to an organization.
 
 If the shared destination is unavailable—for example, while offline—the capture remains private in Unsorted instead of being lost.
 
 ```mermaid
-flowchart TD
+graph TD
   N[New capture] --> S{Route to shared Triage?}
   S -->|No| U[Private Unsorted]
   S -->|Yes| C[Shared Triage]
@@ -33,12 +33,12 @@ flowchart TD
 
 Classification on the shared Triage shelf is a **router** attached to the shelf Bucket: a direct router with one route per destination and rule chips (kind, path, tag, keyword, age) the gate checks, or an agentic router whose routes Bowerbirds AI delegates to. Either way the router only adds — it derives a copy into the destination and signs the source with a status, and a cleanup rule on the shelf retires `routed` sources after a grace period — so a record is never silently moved. What used to be the `suggest` mode is the router's attention queue: a route that is not sure asks, with alternatives and a recommendation. See [Routers](/cloud/routers).
 
-The former classification policy (`suggest`, `both`, `auto`, an allowlist and a fallback) is retired; a workspace administrator attaches a router instead.
+The former classification policy (`suggest`, `both`, `auto`, an allowlist and a fallback) is retired; an organization administrator attaches a router instead.
 
 ## Web Capture intakes
 
 A Web Capture intake is a separate source with a router of its own; see [Web Capture](/cloud/web-capture#routing-submitted-reports).
 
 <Warning>
-  Destinations stay inside the same workspace or a connected tool. Web Capture intakes and the Triage shelf itself cannot be named as a route's destination.
+  Destinations stay inside the same organization or a connected tool. Web Capture intakes and the Triage shelf itself cannot be named as a route's destination.
 </Warning>

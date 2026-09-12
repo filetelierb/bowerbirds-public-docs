@@ -6,7 +6,7 @@ icon: "route"
 
 A **router** sits on one Bucket and dispatches every record that lands there. It is one of three kinds: a **direct** router (a rule table with an optional formatting step), an **agentic** router (Bowerbirds AI triages each record to one or more routes), or an **external** router (your own coding agent runs the loop on its own model). A **route** is one destination scope of the router: where it may write, which connector tools it may use, and the description, goal and rules that decide when a record belongs to it.
 
-Routers replaced Flows on 11 September 2026. Nothing was migrated: a flow's goal, scope and outcomes became a router's kind, Bucket and routes. The `cloud flows` verbs remain as a deprecated alias of `cloud routers`, and a router document with no `kind` is read as `agentic`.
+A router document that names no `kind` is read as `agentic`.
 
 ## Four rules
 
@@ -15,7 +15,7 @@ Routers replaced Flows on 11 September 2026. Nothing was migrated: a flow's goal
     Attaching a second router to a Bucket is refused. Anything the Bucket needs is a route of its one router, so no two automations argue over a record.
   </Card>
   <Card title="Routers only add" icon="plus">
-    A route never moves, edits or trashes a source record. It derives new records inside the workspace, or creates, appends to or links items at external destinations. Deleting is a cleanup policy's job.
+    A route never moves, edits or trashes a source record. It derives new records inside the organization, or creates, appends to or links items at external destinations. Deleting is a cleanup policy's job.
   </Card>
   <Card title="The gate checks every dispatch" icon="shield-check">
     Routes propose; a deterministic gate validates each dispatch against the route's destinations, tool grant and trust; one applier writes. A run that never reaches the gate writes nothing.
@@ -75,12 +75,12 @@ Routers replaced Flows on 11 September 2026. Nothing was migrated: a flow's goal
 
 - **Scope.** `records.bucket` is the whole Bucket. A router cannot narrow its scope to ids or a query, and cannot attach a second Bucket: what a route should skip goes in that route's rules.
 - **Trigger.** A record arriving (`threshold` records since the last decision, `debounceMinutes` of quiet), a `schedule` with a `cron`, a manual run, or an answered question. One cycle runs at a time per Bucket; a second start joins the next.
-- **Destinations** are the allowlist the gate enforces: `paths` (`bucket/path` or `bucket/path/*`) and `buckets` of the workspace a derivation may land in, and `external` targets inside a linked connector (a Linear team, a GitHub repository, a Notion database). A direct route's external destination also names the `tool` it creates with.
-- **Connectors and tool grants.** A route links the workspace connectors it needs and enables or disables each tool by name. Tools in neither list take the connector's default: read-only tools on, destructive tools off, everything off when the server annotates nothing. The enabled read tools are what the route holds while it looks; the enabled write tools bound what the applier may call for that route.
+- **Destinations** are the allowlist the gate enforces: `paths` (`bucket/path` or `bucket/path/*`) and `buckets` of the organization a derivation may land in, and `external` targets inside a linked connector (a Linear team, a GitHub repository, a Notion database). A direct route's external destination also names the `tool` it creates with.
+- **Connectors and tool grants.** A route links the organization connectors it needs and enables or disables each tool by name. Tools in neither list take the connector's default: read-only tools on, destructive tools off, everything off when the server annotates nothing. The enabled read tools are what the route holds while it looks; the enabled write tools bound what the applier may call for that route.
 - **Description and goal** are written for Bowerbirds AI: the description is how a record is delegated here, the goal is what the route then tries to do with it.
 - **Rules** are prose plus filter chips the gate checks deterministically: `kind` (`is`, `isNot`, `in`, `notIn`), `path` (`startsWith`), `tag` and `keyword` (`has`, `hasNot`), `ageDays` (`atMost`), and over the record's [media context](/cloud/media#the-rule-chips), `context` (`has`, `hasNot`) and `signal` (`atLeast`). A direct route with no chips is the catch-all row.
 - **Media** is the router's option for the [media processor](/cloud/media#the-routers-media-option): `"media": { "process": "auto", "videoResolution": "low", "maxMinutesPerRecord": 60 }` reads every gathered record's recordings, audio, PDFs and pictures before the cycle plans, so a route decides from a digest and graded signals rather than a title and a few stills.
-- **Skills** are workspace skills by id, snapshotted into the run. A plugin can ship a route template with all of this plus the connector it expects; see [Plugins](/integrations/plugins).
+- **Skills** are organization skills by id, snapshotted into the run. A plugin can ship a route template with all of this plus the connector it expects; see [Plugins](/integrations/plugins).
 - **Trust** is earned per route. Links, appends and derivations run unattended from the first cycle. Creating an external item asks a person until the route's first accepted create, then runs unattended.
 - **Direct routes only:** `fanOut: true` lets a matched record continue to the routes after it; `format: { "template": "…", "prompt": "…" }` shapes what reaches the destination — a template over `.Title`, `.Content`, `.Kind`, `.Path`, `.Tags`, `.Comments` is rendered with no model call; a prompt asks Bowerbirds AI and is metered like any call.
 
@@ -90,7 +90,7 @@ For every record it was handed, a route answers exactly one of these, with a `re
 
 | Kind | Meaning | Where |
 | --- | --- | --- |
-| `derive` | A new record in the workspace: a split (one of several pieces) or an augmented copy (generated title, summary, extracted fields). Carries `derivedFrom`, the route and a depth; the source's payload bytes are copied on purpose so the derived record can be processed on its own. | A path or Bucket in the route's destinations |
+| `derive` | A new record in the organization: a split (one of several pieces) or an augmented copy (generated title, summary, extracted fields). Carries `derivedFrom`, the route and a depth; the source's payload bytes are copied on purpose so the derived record can be processed on its own. | A path or Bucket in the route's destinations |
 | `create` | A new item at an external destination | A target in a linked connector, through an enabled tool |
 | `append` | A comment or attachment on an existing external item | Same |
 | `link` | The record refers to an existing item; nothing is written | Same |
@@ -102,7 +102,7 @@ The lattice is `none < link < append < derive < create`. Nothing in it edits, mo
 ## A cycle
 
 ```mermaid
-flowchart LR
+graph LR
   A[Record arrives, schedule ticks, or a person runs it] --> G[Gather: the Bucket minus what the router signed at the current version]
   G --> C{Credits and storage cover it?}
   C -->|No| P[Pause: sources freeze as pending, inbox says what is missing]
@@ -152,7 +152,7 @@ Two levels of mark live beside every record the router handled:
 | `routed` | Dispatched externally (create, append or link); the source stays the live record |
 | `processed` | Something was derived; the derived records are now the live ones |
 | `kept` | Every route said `none` |
-| `pending` | A route still owes an answer, or the workspace's routers are paused |
+| `pending` | A route still owes an answer, or the organization's routers are paused |
 
 Marks carry the fingerprint the record had when it was signed. An edited source is fresh again to the router; a record moved into another Bucket is fresh to that Bucket's router. A derived record placed in the same Bucket is signed `routed` at birth so it is never re-derived.
 
@@ -166,21 +166,21 @@ A Bucket with a router fills with sources that have already become something els
 { "cleanupRules": [{ "kind": "routerStatus", "status": "routed", "olderThanDays": 7 }] }
 ```
 
-- The daily sweep **trashes** matching sources; nothing is deleted for good until the workspace's own retention purges the Trash.
+- The daily sweep **trashes** matching sources; nothing is deleted for good until the organization's own retention purges the Trash.
 - The clock is the **mark's**, not the record's: a grace period after the router's decision.
 - A source edited since it was signed is skipped: the router has not seen that version.
-- `pending` is refused as a rule status and never touched by any rule, so a workspace that ran out of credits cannot lose the records it froze.
+- `pending` is refused as a rule status and never touched by any rule, so an organization that ran out of credits cannot lose the records it froze.
 - `olderThanDays` is at least 1. A derived record signed `routed` at birth ages out on the same clock as any other record.
 
 A move with an audit trail and a grace period is exactly a derivation, a `routed` signature, and this rule.
 
 ## Credits, pause and resume
 
-- The **budget pre-flight** compares the workspace balance and the router's `budget.monthlyCredits` against the gathered records before spending anything. Manual runs honour the same caps.
+- The **budget pre-flight** compares the organization balance and the router's `budget.monthlyCredits` against the gathered records before spending anything. Manual runs honour the same caps.
 - A **spend guard** stops a cycle when the next model call is unaffordable; the partial plan is filed and marked, never an overdraft.
 - Every ledger line carries the **job id**; a run's cost is summed exactly on its run record. Reclaimed runs are not re-charged.
 - The **media stage** is priced in the pre-flight from a probe of each record's media. When plan plus media would exceed the balance or the router's month, media is switched off for that cycle with a note, never a pause; see [Media context](/cloud/media#credits).
-- Out of credits or out of storage **pauses every router of the workspace** (`routersPaused {reason: credits | storage, since}` on the workspace). The sources the paused cycle gathered stay `pending` and render as frozen in both apps; an inbox notice says what to buy or free. A top-up or freed space enqueues the resume by itself, and the resumed cycle re-delegates only the routes still missing, so no dispatch is duplicated.
+- Out of credits or out of storage **pauses every router of the organization** (`routersPaused {reason: credits | storage, since}` on the organization). The sources the paused cycle gathered stay `pending` and render as frozen in both apps; an inbox notice says what to buy or free. A top-up or freed space enqueues the resume by itself, and the resumed cycle re-delegates only the routes still missing, so no dispatch is duplicated.
 
 `bowerbirds cloud routers run <id>` exits with the parked reason when a cycle pauses; `bowerbirds cloud routers runs <id> --cost` lists what each cycle cost.
 

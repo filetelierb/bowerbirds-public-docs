@@ -4,7 +4,7 @@ description: "What an approval grants, how to mint a token by hand, and how to r
 icon: "key"
 ---
 
-An agent acts as its own token, never as a person. A token has one role and one scope, and a workspace owner or administrator can revoke it at any time.
+An agent acts as its own token, never as a person. A token has one role and one scope, and an organization owner or administrator can revoke it at any time.
 
 ## Roles
 
@@ -19,23 +19,23 @@ Use the narrowest role that supports the workflow. `router` is neither wider nor
 
 ## Scopes
 
-- A **workspace token** opens every Bucket the workspace owns. This is what an approval in the browser grants, and what an agent needs to move a record between Buckets.
+- A **organization token** opens every Bucket the organization owns. This is what an approval in the browser grants, and what an agent needs to move a record between Buckets.
 - A **Bucket token** opens exactly one Bucket. Mint one by hand when an agent should see nothing else.
 
 ## Approved in the browser
 
-When an MCP client, or the CLI's `tokens login`, connects through OAuth, the person signs in, picks the workspace and the role, and approves. The grant is a workspace token held by that client: the client receives an access token that expires after one hour and a refresh token that lasts thirty days and rotates on every use. A refresh token presented twice revokes the whole grant.
+When an MCP client, or the CLI's `tokens login`, connects through OAuth, the person signs in, picks the organization and the role, and approves. The grant is an organization token held by that client: the client receives an access token that expires after one hour and a refresh token that lasts thirty days and rotates on every use. A refresh token presented twice revokes the whole grant.
 
 ## Minted by hand
 
 For an agent with no browser, such as a CI job, mint a token and hand it over. It is shown once; only its hash is kept.
 
 ```sh
-bowerbirds cloud tokens mint --label "ci reviewer" --role contribute            # workspace token
+bowerbirds cloud tokens mint --label "ci reviewer" --role contribute            # organization token
 bowerbirds cloud tokens mint --label "ci reviewer" --role read --bucket me/qa   # Bucket token
 ```
 
-The Mac app's **Settings → Developer Tools** mints workspace tokens too.
+The Mac app's **Settings → Developer Tools** mints organization tokens too.
 
 The browser approval and `tokens mint --role` offer `read`, `contribute` and `admin`. A `router` token is minted through the door for now, as an owner or administrator:
 
@@ -46,7 +46,7 @@ curl -X POST "$BOWERBIRDS_API/orgs/tokens" -H "Authorization: Bearer <your sessi
 
 ## See and revoke connections
 
-Every connection of the workspace — approved in the browser or minted by hand — is listed in **Settings → Developer Tools** on the Mac, with its label, role and origin, and a revoke control. From the CLI:
+Every connection of the organization — approved in the browser or minted by hand — is listed in **Settings → Developer Tools** on the Mac, with its label, role and origin, and a revoke control. From the CLI:
 
 ```sh
 bowerbirds cloud tokens list [--bucket me/qa]

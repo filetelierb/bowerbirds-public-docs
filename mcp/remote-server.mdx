@@ -4,7 +4,7 @@ description: "Add the remote MCP door to an MCP client and approve the connectio
 icon: "cloud"
 ---
 
-The remote MCP door is an HTTP MCP server with OAuth. A client that supports it discovers the authorization server by itself, registers, and opens an approval page in your browser. You sign in, pick the workspace and the role, and approve. The client receives a short-lived access token and a refresh token; nothing is pasted anywhere.
+The remote MCP door is an HTTP MCP server with OAuth. A client that supports it discovers the authorization server by itself, registers, and opens an approval page in your browser. You sign in, pick the organization and the role, and approve. The client receives a short-lived access token and a refresh token; nothing is pasted anywhere.
 
 ```text
 https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
@@ -34,22 +34,22 @@ https://bowerbirds-cloud-y7wboabaoa-uc.a.run.app/mcp
     </Tabs>
   </Step>
   <Step title="Approve in the browser">
-    The first tool call opens the approval page. Sign in with Google, Apple, or an emailed link. Choose the workspace, the role — `read`, `contribute` or `admin` — and a label, then approve.
+    The first tool call opens the approval page. Sign in with Google, Apple, or an emailed link. Choose the organization, the role — `read`, `contribute` or `admin` — and a label, then approve.
 
-    Only an owner or an administrator of a workspace can authorize an agent in it.
+    Only an owner or an administrator of an organization can authorize an agent in it.
   </Step>
   <Step title="Verify the scope">
-    Ask the client to list a Bucket's records without making changes. Confirm it sees the intended workspace before enabling a write-capable workflow.
+    Ask the client to list a Bucket's records without making changes. Confirm it sees the intended organization before enabling a write-capable workflow.
   </Step>
 </Steps>
 
 ## What the client receives
 
-An access token that expires after one hour and a refresh token that lasts thirty days and rotates on every use. The client refreshes by itself. The approval appears in the workspace's agent connections, under the client's name, where it can be revoked at any time. See [Agent tokens](/mcp/agent-tokens).
+An access token that expires after one hour and a refresh token that lasts thirty days and rotates on every use. The client refreshes by itself. The approval appears in the organization's agent connections, under the client's name, where it can be revoked at any time. See [Agent tokens](/mcp/agent-tokens).
 
 ## Clients without OAuth
 
-A client that cannot run the browser flow can present a token minted by hand as a bearer header:
+A client that cannot run the browser approval can present a token minted by hand as a bearer header:
 
 ```json
 {

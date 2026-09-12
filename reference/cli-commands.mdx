@@ -99,13 +99,13 @@ bowerbirds cloud tokens status
 bowerbirds cloud tokens mint --label <label> --role read|contribute|admin [--bucket <owner/slug>]
 bowerbirds cloud tokens list [--bucket <owner/slug>]
 bowerbirds cloud tokens revoke <id> [--bucket <owner/slug>]
-bowerbirds cloud routers <list|show|create|update|delete|run|runs|attention|answer>
+bowerbirds cloud routers <list|show|create|update|delete|run|runs|attention|answer|apply>
 bowerbirds cloud routers create|update [<router-id>] --file <router.json>
 bowerbirds cloud routers run <router-id> [--items id,id] [--follow]
 bowerbirds cloud routers runs <router-id> [--cost]
 bowerbirds cloud routers attention [<router-id>] [--state open|handled]
 bowerbirds cloud routers answer <attention-id> --alternative <n> | --text <answer>
-bowerbirds cloud flows …                       (deprecated alias of routers; flows apply <run-item-id> [--strike op-1,op-2] stays here)
+bowerbirds cloud routers apply <run-item-id> [--strike op-1,op-2]
 bowerbirds cloud plugins <list|show|install|upgrade|remove|templates>
 bowerbirds cloud plugins install <owner/repo|github-url> [--ref <branch|tag|commit>]
 bowerbirds cloud mcp-servers <list|show|add|remove|health|check>
@@ -118,9 +118,9 @@ bowerbirds cloud web-captures <list|mint|rename|origins|set-disabled|set-recordi
 bowerbirds cloud usage
 ```
 
-`records context` reads what the [media processor](/cloud/media#from-the-cli) learned about a record; `--refresh` recomputes it and spends the workspace's credits.
+`records context` reads what the [media processor](/cloud/media#from-the-cli) learned about a record; `--refresh` recomputes it and spends the organization's credits.
 
-Use `--org <id-or-slug>` with cloud commands to target a workspace without switching. Add `--token <bbt_…>` (or set `BOWERBIRDS_TOKEN`) to act as an agent token instead of the signed-in person; a `tokens login` credential is used when neither is set. `tokens mint --role` offers `read`, `contribute` and `admin`; the `router` role is minted through the tokens door for now, see [External routers](/cloud/external-routers#the-router-role).
+Use `--org <id-or-slug>` with cloud commands to target an organization without switching. Add `--token <bbt_…>` (or set `BOWERBIRDS_TOKEN`) to act as an agent token instead of the signed-in person; a `tokens login` credential is used when neither is set. `tokens mint --role` offers `read`, `contribute` and `admin`; the `router` role is minted through the tokens door for now, see [External routers](/cloud/external-routers#the-router-role).
 
 ## MCP
 

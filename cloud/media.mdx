@@ -49,7 +49,7 @@ The whole document, as `GET …/context` answers it (schema `bowerbirds.record-c
   "version": "bowerbirds.record-context/1",
   "fingerprint": "sha256:…",
   "at": "2026-09-11T10:00:00Z",
-  "digest": "A walkthrough of the checkout flow: the coupon field rejects valid codes on Safari; the reviewer asks whether the cart total should update live.",
+  "digest": "A walkthrough of checkout: the coupon field rejects valid codes on Safari; the reviewer asks whether the cart total should update live.",
   "summary": "…",
   "segments": [
     {
@@ -109,7 +109,7 @@ The listing, the item bundle, and the MCP `get_capture` and `list_captures` answ
 
 The `media` stage runs after gather and before triage, for direct and agentic routers alike:
 
-1. **Pre-flight.** The probe's numbers price every gathered record that has no current context, on top of the plan's own estimate. If plan plus media would exceed the workspace balance or the router's month, media is switched **off for that cycle** with a note on the run — never a pause, never a parked cycle.
+1. **Pre-flight.** The probe's numbers price every gathered record that has no current context, on top of the plan's own estimate. If plan plus media would exceed the organization's balance or the router's month, media is switched **off for that cycle** with a note on the run — never a pause, never a parked cycle.
 2. **Process.** Each such record is read through the processor, charged under the run's feature and attributed to the job and the router. A record over its cap is filed `partial`; a record whose processing fails is a note on the run, not a failed cycle. The stage is bounded by a six-minute deadline.
 3. **Hand over.** The router's triage sees each record's `context {digest, signals, entities, screens, partial, note}` — never the whole document. An agentic router's triage reads the digest and the signals to decide which routes get the record and names the part that is theirs in the hint; every route's subagent holds a read tool, `get_record_context(recordId, part?)`, to look deeper before it answers. A route can turn the tool off with a grant on the reserved connector id `builtin`: `"connectors": [{ "connectorId": "builtin", "tools": { "disabled": ["get_record_context"] } }]`.
 
@@ -136,8 +136,8 @@ Words are trimmed and lowercased on write; an update that omits a field keeps it
 - The **pre-flight** prices media from the probe before anything is spent, and reserves it out of the cycle's budget; the plan estimate and the media estimate are one number against the balance and the router's `budget.monthlyCredits`.
 - Media calls are **metered like any other model call**: one ledger line per call, attributed to the job and the router, so a cycle's cost on its run record is exact. Media tokens are also summed on the run (`mediaTokens`) and on the router's month.
 - `GET /usage/routers` shows media tokens per router for the month and per run; the runs door carries `mediaTokens` on every run, and `bowerbirds cloud routers runs <id> --cost` lists what each cycle cost.
-- A **recompute** through the door below (`POST …/context`, `process_media`, `--refresh`) charges the workspace by the caller, with no job or router attached; a recompute over an unchanged record answers from cache at no cost unless forced.
-- A workspace **paused for credits** refuses recomputes with `402 routers_paused`; a storage pause lets them through.
+- A **recompute** through the door below (`POST …/context`, `process_media`, `--refresh`) charges the organization by the caller, with no job or router attached; a recompute over an unchanged record answers from cache at no cost unless forced.
+- An organization **paused for credits** refuses recomputes with `402 routers_paused`; a storage pause lets them through.
 
 ## The two doors
 
@@ -146,9 +146,9 @@ GET  /buckets/{owner}/{slug}/items/{id}/context[?part=summary|segments|transcrip
 POST /buckets/{owner}/{slug}/items/{id}/context   {"force": false, "videoResolution": "low|high", "maxMinutesPerRecord": 0}
 ```
 
-**GET** is open to any role that can read the Bucket — a session, a Bucket or workspace read token, a router token — and answers the whole document or a part. Refusals: `403` for a stranger; `404 no item`; `404 {"error": "no_context", "hint": "…"}` when the record has no `context.json` yet or the stored document is of a version this cloud does not read.
+**GET** is open to any role that can read the Bucket — a session, a Bucket or organization read token, a router token — and answers the whole document or a part. Refusals: `403` for a stranger; `404 no item`; `404 {"error": "no_context", "hint": "…"}` when the record has no `context.json` yet or the stored document is of a version this cloud does not read.
 
-**POST** recomputes now through the platform's processor and answers the whole document. It charges the workspace by the caller, so who may call is narrower: an owner's or administrator's session, or a router token. The body is optional; empty means the defaults, `force` recomputes even when the stored context matches the payloads, `maxMinutesPerRecord` at zero means the default. Refusals: `403 admin_required` for a member or a Bucket contributor; `403 router_role_required` for a `read`, `contribute` or `admin` agent token; `400` for bad JSON, `videoResolution must be low or high`, `maxMinutesPerRecord must be zero (the default) or positive`; `402 {"error": "routers_paused", "reason": "credits"}`; `503 media_unconfigured` when the deployment has no processor; `502 processing the record's media: …` when a call failed — the calls made are still charged.
+**POST** recomputes now through the platform's processor and answers the whole document. It charges the organization by the caller, so who may call is narrower: an owner's or administrator's session, or a router token. The body is optional; empty means the defaults, `force` recomputes even when the stored context matches the payloads, `maxMinutesPerRecord` at zero means the default. Refusals: `403 admin_required` for a member or a Bucket contributor; `403 router_role_required` for a `read`, `contribute` or `admin` agent token; `400` for bad JSON, `videoResolution must be low or high`, `maxMinutesPerRecord must be zero (the default) or positive`; `402 {"error": "routers_paused", "reason": "credits"}`; `503 media_unconfigured` when the deployment has no processor; `502 processing the record's media: …` when a call failed — the calls made are still charged.
 
 ## From the CLI
 
@@ -156,7 +156,7 @@ POST /buckets/{owner}/{slug}/items/{id}/context   {"force": false, "videoResolut
 bowerbirds cloud records context <owner/slug> <record-id> [--part summary|segments|transcript|moments] [--refresh] [--json]
 ```
 
-Without `--part`, the whole document is rendered: the digest, the signals as chips, the segments with their moments on an `m:ss` or `h:mm:ss` clock. With `--part`, the door's own slice is printed as JSON. `--refresh` recomputes through the cloud's processor and spends the workspace's credits — an owner's or administrator's session, or a router token; the door's refusal is the sentence printed otherwise. `--json` prints the document as it came.
+Without `--part`, the whole document is rendered: the digest, the signals as chips, the segments with their moments on an `m:ss` or `h:mm:ss` clock. With `--part`, the door's own slice is printed as JSON. `--refresh` recomputes through the cloud's processor and spends the organization's credits — an owner's or administrator's session, or a router token; the door's refusal is the sentence printed otherwise. `--json` prints the document as it came.
 
 ## MCP tools
 
@@ -165,7 +165,7 @@ The remote door advertises two more tools beside the [ordinary](/mcp/remote-tool
 | Tool | Who | What it does |
 | --- | --- | --- |
 | `get_record_context {id, slug?, owner?, part?}` | Any agent token; free | Forwards the GET: the digest, signals, entities, screens, quotes and the segments with timed moments, or one `part`. A record with no context answers a `no_context` error, which is data, not a failure |
-| `process_media {id, slug?, owner?, force?, videoResolution?, maxMinutesPerRecord?}` | `router` role only | Forwards the POST and charges the workspace's credits. Refused with `router_role` before any request from a `read`, `contribute` or `admin` token; relays `routers_paused` |
+| `process_media {id, slug?, owner?, force?, videoResolution?, maxMinutesPerRecord?}` | `router` role only | Forwards the POST and charges the organization's credits. Refused with `router_role` before any request from a `read`, `contribute` or `admin` token; relays `routers_paused` |
 
 An [external router](/cloud/external-routers) reads the context the same way a native route does: `get_record_context` before deciding, the digest and signals first, a part when they are not enough. `process_media` is for a record that has no context yet — an external router's own model is free, but the platform's processor is platform credits. The [plugin](/integrations/plugins)'s `/bowerbirds-route` command and the `bowerbirds-records` skill say the same.
 

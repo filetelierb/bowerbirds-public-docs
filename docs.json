@@ -175,10 +175,6 @@
     {
       "source": "/mcp/local-tools",
       "destination": "/mcp/remote-tools"
-    },
-    {
-      "source": "/cloud/flows",
-      "destination": "/cloud/routers"
     }
   ]
 }
