@@ -72,7 +72,7 @@ The whole document, as `GET …/context` answers it — here the forty-minute me
   "tokens": { "prompt": 1013400, "output": 4820 },
   "chunks": [
     { "id": "c1", "ref": { "kind": "video", "payload": "video-001.mp4", "start": 0, "end": 1260 } },
-    { "id": "c2", "ref": { "kind": "video", "payload": "video-001.mp4", "start": 1140, "end": 2412 } }
+    { "id": "c2", "ref": { "kind": "video", "payload": "video-001.mp4", "start": 1140, "end": 2400 } }
   ],
   "referee": { "passes": 2, "added": [1, 0] },
   "summary": "A forty-minute screen recording of the weekly product meeting: four people, the paywall redesign and the release process. It establishes what was decided about the redesign and its owner, a reproducible upload failure demonstrated live, an idea about a shared template library that was deferred, the Friday build decision, and a passing remark that a connector needs reconnecting after the workspace rename.",
@@ -225,9 +225,9 @@ The remote door advertises these beside the [ordinary](/mcp/remote-tools) and [r
 | Tool | Who | What it does |
 | --- | --- | --- |
 | `get_record_context {id, slug?, owner?, part?}` | Any agent token; free | Forwards the GET: the summary, the findings with their chunk references and quotes, and the chunk table, or one `part`. A record with no document answers a `no_context` error, which is data, not a failure |
-| `get_media_chunk {id, chunk, slug?, owner?}` | `router` role; free | What the processor observed in one chunk as it read it — the detail behind a finding's description — from the stored sidecar. Answers `{id, ref, observations, quotes}`. Refused `no_chunks` when the record has none, `no_chunk` when the id is not one of its chunks |
-| `search_records {q, path?, limit?, slug?, owner?}` | `router` role; free | One Bucket's records in words — titles, text and a capture's comments — so a route can find what already exists before filing something new. Answers `{id, title, path, kind, snippet}` per hit, ten by default and at most twenty. Behind it: `GET /buckets/{owner}/{slug}/search?q=&path=&limit=` |
-| `get_record {id, slug?, owner?}` | `router` role; free | One record whole: `id`, `title`, `path`, `kind`, `tags`, `content`, a capture's numbered `comments`, the payload manifest and the context stamp. Behind it: `GET /buckets/{owner}/{slug}/items/{item}` |
+| `get_media_chunk {id, chunk, slug?, owner?}` | `router` role (and `admin`, the role this door has never narrowed); free | What the processor observed in one chunk as it read it — the detail behind a finding's description — from the stored sidecar. Answers `{id, ref, observations, quotes}`. Refused `no_chunks` when the record has none, `no_chunk` when the id is not one of its chunks |
+| `search_records {q, path?, limit?, slug?, owner?}` | `router` role (and `admin`, the role this door has never narrowed); free | One Bucket's records in words — titles, text and a capture's comments — so a route can find what already exists before filing something new. Answers `{id, title, path, kind, snippet}` per hit, ten by default and at most twenty. Behind it: `GET /buckets/{owner}/{slug}/search?q=&path=&limit=` |
+| `get_record {id, slug?, owner?}` | `router` role (and `admin`, the role this door has never narrowed); free | One record whole: `id`, `title`, `path`, `kind`, `tags`, `content`, a capture's numbered `comments`, the payload manifest and the context stamp. Behind it: `GET /buckets/{owner}/{slug}/items/{item}` |
 | `process_media {id, slug?, owner?, force?, videoResolution?}` | `router` role only | Forwards the POST and charges the workspace's credits. Refused with `router_role` before any request from a `read`, `contribute` or `admin` token; relays `routers_paused` |
 
 A route may turn any of the four read tools off with a grant on the reserved connector id `builtin`:
@@ -242,7 +242,7 @@ An [external router](/cloud/external-routers) reads the findings the same way a 
 
 <AccordionGroup>
   <Accordion title="A 40-minute meeting, three routes">
-    Two chunks, `c1 0:00–21:00` and `c2 19:00–40:12`; the referee's first pass over `c2` adds a fifth finding — a passing remark about a connector — and its second adds nothing, so the document records two passes and one finding added. The orchestrator delegates the two decisions to **Decisions log**, the upload failure and the connector remark to **Engineering bugs**, the template idea to **Product ideas**. Decisions log searches its folder, finds "Decisions — September", and **merges** a derived note beside it. Engineering bugs searches the connector's issues, finds an open one on the same symptom and **updates** it with a comment, then **creates** a new issue for the remark it found nothing for. Product ideas finds no match and **creates** a note. Router mark: `routed`.
+    Two chunks, `c1 0:00–21:00` and `c2 19:00–40:00`; the referee's first pass over `c2` adds a fifth finding — a passing remark about a connector — and its second adds nothing, so the document records two passes and one finding added. The orchestrator delegates the two decisions to **Decisions log**, the upload failure and the connector remark to **Engineering bugs**, the template idea to **Product ideas**. Decisions log searches its folder, finds "Decisions — September", and **merges** a derived note beside it. Engineering bugs searches the connector's issues, finds an open one on the same symptom and **updates** it with a comment, then **creates** a new issue for the remark it found nothing for. Product ideas finds no match and **creates** a note. Router mark: `routed`.
   </Accordion>
   <Accordion title="A 120-page PDF specification">
     Three page chunks, `1–41`, `40–80`, `79–120`. Four findings, the last added by the referee over the third chunk, citing pages 112–118 of an appendix of breaking field renames. All four go to one route, whose destination is an internal Specs folder. Its search finds a Package of notes on the previous version, so it **merges**: one derived note carrying the four findings with their page references, filed into that Package as a new scene. Route mark `merge`, router mark `routed`.

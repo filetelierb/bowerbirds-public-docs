@@ -19,9 +19,9 @@ A Bucket token acts on its Bucket only. A workspace token names the Bucket on ev
 | `add_finding` | A short note at the Bucket root |
 | `list_routes`, `claim_cycle`, `renew_cycle`, `release_cycle`, `derive_record`, `sign_items` with `items` | The routing tools, advertised to a token with the `router` role; see below |
 | `get_record_context` | Read the findings the media processor condensed a record's video, audio, PDF or images into — a summary, then detailed descriptions each citing the chunk and moment it came from — or one `part` (`summary`, `findings`, `chunks`); free, any role. See [Media findings](/cloud/media#mcp-tools) |
-| `get_media_chunk` | What the processor observed in ONE chunk as it read it, behind a finding's description; `router` role, free |
-| `search_records` | One Bucket's records in words — titles, text and a capture's comments — to find what already exists before filing something new; `router` role, free |
-| `get_record` | Read one record whole by id: content, comments, tags, payload manifest; `router` role, free |
+| `get_media_chunk` | What the processor observed in ONE chunk as it read it, behind a finding's description; `router` role (and `admin`), free |
+| `search_records` | One Bucket's records in words — titles, text and a capture's comments — to find what already exists before filing something new; `router` role (and `admin`), free |
+| `get_record` | Read one record whole by id: content, comments, tags, payload manifest; `router` role (and `admin`), free |
 | `process_media` | Compute a record's findings now through the platform's processor; `router` role only, charges the workspace's credits |
 
 ## `list_items`
