@@ -78,8 +78,8 @@ A router document that names no `kind` is read as `agentic`.
 - **Destinations** are the allowlist the gate enforces: `paths` (`bucket/path` or `bucket/path/*`) and `buckets` of the workspace a derivation may land in, and `external` targets inside a linked connector (a Linear team, a GitHub repository, a Notion database). A direct route's external destination also names the `tool` it creates with.
 - **Connectors and tool grants.** A route links the workspace connectors it needs and enables or disables each tool by name. Tools in neither list take the connector's default: read-only tools on, destructive tools off, everything off when the server annotates nothing. The enabled read tools are what the route holds while it looks; the enabled write tools bound what the applier may call for that route.
 - **Description and goal** are written for Bowerbirds AI: the description is how a record is delegated here, the goal is what the route then tries to do with it.
-- **Rules** are prose plus filter chips the gate checks deterministically: `kind` (`is`, `isNot`, `in`, `notIn`), `path` (`startsWith`), `tag` and `keyword` (`has`, `hasNot`), `ageDays` (`atMost`), and over the record's [media context](/cloud/media#the-rule-chips), `context` (`has`, `hasNot`) and `signal` (`atLeast`). A direct route with no chips is the catch-all row.
-- **Media** is the router's option for the [media processor](/cloud/media#the-routers-media-option): `"media": { "process": "auto", "videoResolution": "low", "maxMinutesPerRecord": 60 }` reads every gathered record's recordings, audio, PDFs and pictures before the cycle plans, so a route decides from a digest and graded signals rather than a title and a few stills.
+- **Rules** are prose plus filter chips the gate checks deterministically: `kind` (`is`, `isNot`, `in`, `notIn`), `path` (`startsWith`), `tag` and `keyword` (`has`, `hasNot`) and `ageDays` (`atMost`). A direct route with no chips is the catch-all row. Rules only narrow which records a route may take; what a route is *for* is its description and goal, and that is what the orchestrator reads a record's findings against.
+- **Media** is the router's option for the [media processor](/cloud/media#the-routers-media-option): `"media": { "process": "auto", "videoResolution": "low" }` condenses every gathered record's recordings, audio, PDFs and pictures into findings before the cycle delegates, so a route decides from detailed descriptions with chunk references rather than a title and a few stills. Agentic routers only — a direct router never runs the stage.
 - **Skills** are workspace skills by id, snapshotted into the run. A plugin can ship a route template with all of this plus the connector it expects; see [Plugins](/integrations/plugins).
 - **Trust** is earned per route. Links, appends and derivations run unattended from the first cycle. Creating an external item asks a person until the route's first accepted create, then runs unattended.
 - **Direct routes only:** `fanOut: true` lets a matched record continue to the routes after it; `format: { "template": "…", "prompt": "…" }` shapes what reaches the destination — a template over `.Title`, `.Content`, `.Kind`, `.Path`, `.Tags`, `.Comments` is rendered with no model call; a prompt asks Bowerbirds AI and is metered like any call.
@@ -91,13 +91,14 @@ For every record it was handed, a route answers exactly one of these, with a `re
 | Kind | Meaning | Where |
 | --- | --- | --- |
 | `derive` | A new record in the workspace: a split (one of several pieces) or an augmented copy (generated title, summary, extracted fields). Carries `derivedFrom`, the route and a depth; the source's payload bytes are copied on purpose so the derived record can be processed on its own. | A path or Bucket in the route's destinations |
+| `merge` | A derivation that lands **beside what it relates to**: the derived record is placed into an existing Package the route found, or a new Package is made of the related records and the derived one. A merge is a derivation for the caps — the same depth, origin and daily breakers count it beside `derive`. | A path or Bucket in the route's destinations; the Package's own place |
 | `create` | A new item at an external destination | A target in a linked connector, through an enabled tool |
 | `append` | A comment or attachment on an existing external item | Same |
 | `link` | The record refers to an existing item; nothing is written | Same |
 | `none` | Nothing to do — and that is a decision, so it is marked too | — |
 | `ask` | A question for a person, with argued alternatives and a recommended one | The attention queue |
 
-The lattice is `none < link < append < derive < create`. Nothing in it edits, moves or trashes the source.
+The lattice is `none < link < append < derive < create`; `merge` is judged as a derivation. Nothing in it edits, moves or trashes the source — a router only adds.
 
 ## A cycle
 
@@ -116,12 +117,12 @@ graph LR
 
 1. **Gather.** The Bucket's records minus those the router already signed at their current fingerprint. Records with partial route marks from an earlier cycle go only to the routes still missing.
 2. **Pre-flight.** Credits and storage are checked against the record count — and the media the records carry — before anything is spent.
-3. **Media.** Each gathered record with media and no current context is read by the [media processor](/cloud/media): its digest, signals, entities and screens are what triage sees. A record already read at its current version costs nothing again.
-4. **Triage.** A direct router evaluates its rule table. An agentic router reads each record's digest and signals, delegates it to every route whose description fits with a hint of which part is theirs, and hands each route its whole batch, so three captures about one bug are seen together.
-5. **Route.** Each route searches its destinations with its enabled read tools, reads deeper into a record's context with `get_record_context` when the digest is not enough, groups what belongs together, and answers per record.
+3. **Media.** On an agentic router, each gathered record with media and no current findings document is condensed by the [media processor](/cloud/media) into a summary and findings, each citing the chunk and moment it came from. A record already read at its current version costs nothing again; one whose media is still uploading is deferred, unsigned, to the next cycle.
+4. **Delegate.** A direct router evaluates its rule table. An agentic router reads each finding's description against each route's description and goal and answers a delegation table: which findings go to which route, and why. A finding may go to several routes; one that fits no route is reported unrouted, never invented into one. A record with no media is delegated on its own words — one finding per numbered comment, or per paragraph.
+5. **Route.** Each delegated route receives only its findings, the chunk references and the source record's id. It searches its destination for what already exists — `search_records` and `get_record` inside the workspace, the connector's read tools outside it, `get_media_chunk` when a description is not detail enough — and then answers: merge beside the related record, update the existing item, create a new one linked to its relatives, or nothing.
 6. **Gate.** Every dispatch is validated; see the table below. The plan that survives is the plan that runs.
 7. **Apply and sign.** One applier writes: derived records with provenance and copied bytes, external items through the linked connector, each checked against the source's existing links so a retry never creates twice. It signs a route mark per route with the destination item's id, then the router mark with its status once every delegated route reported.
-8. **Report.** Exceptions become attention rows; the ledger gets one line per model turn with the job id; the run record holds the dispatches, the gate's decisions, the media stage's counts and the cost.
+8. **Report.** Exceptions become attention rows; the ledger gets one line per model turn with the job id; the run record holds the dispatches, the gate's decisions, the delegation table, the findings no route was given, the media stage's counts and chunk plan, and the cost.
 
 ## What the gate does
 
@@ -129,6 +130,7 @@ graph LR
 | --- | --- |
 | A dispatch inside the route's allowlist, from a trusted route | Dispatched |
 | A destination outside the route's allowlist | Dropped, recorded as clamped, record kept |
+| A `merge` into a Package outside the route's allowlist, or into the record being routed | Dropped, recorded as clamped |
 | A dispatch needing a tool the route disabled or never enabled | Dropped, recorded as clamped |
 | Two routes derive the same thing (same path, same content) | One derivation, both routes marked |
 | `create` where the record already links to an item there | Turned into `append` or `link`, recorded as clamped |
@@ -144,13 +146,13 @@ A direct router reaches the ask row only on a failed integration or a rule that 
 
 Two levels of mark live beside every record the router handled:
 
-- A **route mark** per route: the dispatch kind, the destination item's id (a derived record's id, a Linear issue, a GitHub issue number), and the cycle. Route marks are also the dedupe memory: a later capture about the same bug finds its issue by the link.
+- A **route mark** per route: the dispatch kind, the destination item's id (a derived record's id, the Package a merge landed in, a Linear issue, a GitHub issue number), the finding ids the decision rested on, and the cycle. Route marks are also the dedupe memory: a later capture about the same bug finds its issue by the link.
 - A **router mark** with a status, written only when every delegated route has reported:
 
 | Status | Meaning |
 | --- | --- |
 | `routed` | Dispatched externally (create, append or link); the source stays the live record |
-| `processed` | Something was derived; the derived records are now the live ones |
+| `processed` | Something was derived or merged; the derived records are now the live ones |
 | `kept` | Every route said `none` |
 | `pending` | A route still owes an answer, or the workspace's routers are paused |
 
@@ -179,7 +181,7 @@ A move with an audit trail and a grace period is exactly a derivation, a `routed
 - The **budget pre-flight** compares the workspace balance and the router's `budget.monthlyCredits` against the gathered records before spending anything. Manual runs honour the same caps.
 - A **spend guard** stops a cycle when the next model call is unaffordable; the partial plan is filed and marked, never an overdraft.
 - Every ledger line carries the **job id**; a run's cost is summed exactly on its run record. Reclaimed runs are not re-charged.
-- The **media stage** is priced in the pre-flight from a probe of each record's media. When plan plus media would exceed the balance or the router's month, media is switched off for that cycle with a note, never a pause; see [Media context](/cloud/media#credits).
+- The **media stage** is priced in the pre-flight from the duration the probe measured. When plan plus media would exceed the balance or the router's month, media is switched off for that cycle with a note, never a pause; see [Media findings](/cloud/media#credits).
 - Out of credits or out of storage **pauses every router of the workspace** (`routersPaused {reason: credits | storage, since}` on the workspace). The sources the paused cycle gathered stay `pending` and render as frozen in both apps; an inbox notice says what to buy or free. A top-up or freed space enqueues the resume by itself, and the resumed cycle re-delegates only the routes still missing, so no dispatch is duplicated.
 
 `bowerbirds cloud routers run <id>` exits with the parked reason when a cycle pauses; `bowerbirds cloud routers runs <id> --cost` lists what each cycle cost.

@@ -18,8 +18,11 @@ A Bucket token acts on its Bucket only. A workspace token names the Bucket on ev
 | `sign_items` / `unsign_items` | Put this token's mark on records, or take it off |
 | `add_finding` | A short note at the Bucket root |
 | `list_routes`, `claim_cycle`, `renew_cycle`, `release_cycle`, `derive_record`, `sign_items` with `items` | The routing tools, advertised to a token with the `router` role; see below |
-| `get_record_context` | Read what the media processor learned about a record — digest, graded signals, entities, screens, timed moments — or one `part` of it; free, any role. See [Media context](/cloud/media#mcp-tools) |
-| `process_media` | Compute a record's context now through the platform's processor; `router` role only, charges the workspace's credits |
+| `get_record_context` | Read the findings the media processor condensed a record's video, audio, PDF or images into — a summary, then detailed descriptions each citing the chunk and moment it came from — or one `part` (`summary`, `findings`, `chunks`); free, any role. See [Media findings](/cloud/media#mcp-tools) |
+| `get_media_chunk` | What the processor observed in ONE chunk as it read it, behind a finding's description; `router` role, free |
+| `search_records` | One Bucket's records in words — titles, text and a capture's comments — to find what already exists before filing something new; `router` role, free |
+| `get_record` | Read one record whole by id: content, comments, tags, payload manifest; `router` role, free |
+| `process_media` | Compute a record's findings now through the platform's processor; `router` role only, charges the workspace's credits |
 
 ## `list_items`
 
@@ -95,12 +98,12 @@ A token with the `router` role is a Bucket's [external router](/cloud/external-r
 | `list_routes` | The Bucket's router and its routes: destinations, connectors with their tool grants, description, goal, rules, and whether the route may create external items unattended |
 | `claim_cycle` | Take the Bucket's cycle marker under a lease (10 minutes by default, at most 60) and receive the `cycleId` the marks carry |
 | `renew_cycle` / `release_cycle` | Extend the lease; let it go when the run is done |
-| `derive_record` | A new record from a source — `split` or `augment` — with provenance and the source's payload bytes copied, inside the route's destinations. The source is never written |
-| `sign_items` with `items` | The source's route marks and router mark: a `status` (`pending`, `kept`, `routed`, `processed`) and one link per route (`derive`, `create`, `append`, `link`, `none`) with the destination item's id |
+| `derive_record` | A new record from a source — `split` or `augment` — with provenance and the source's payload bytes copied, inside the route's destinations. With `mergeInto` or `related` it lands in a Package beside what it relates to. The source is never written |
+| `sign_items` with `items` | The source's route marks and router mark: a `status` (`pending`, `kept`, `routed`, `processed`) and one link per route (`derive`, `merge`, `create`, `append`, `link`, `none`) with the destination item's id and, optionally, the finding ids it rested on |
 
 `sign_items` keeps its plain `ids` shape for every role: a token's own mark, unchanged. A `router` token calling `move_items` or `trash_items` is refused with `router_role`; routers only add.
 
-Every record a router handled answers `routerStatus {status, cycleId, at, missing}`, `links [{route, kind, destination}]` and, on a derived record, `derivedFrom` — from `list_items`, `get_capture` and the CLI alike. A record the media processor has read also carries a `context` stamp (`digest`, `signals`, `entities`, `screens`, `partial`) on `get_capture` and `list_captures`; the whole document is `get_record_context`'s, see [Media context](/cloud/media#the-context-document).
+Every record a router handled answers `routerStatus {status, cycleId, at, missing}`, `links [{route, kind, destination}]` and, on a derived record, `derivedFrom` — from `list_items`, `get_capture` and the CLI alike. A record the media processor has read also carries a `context` stamp (`version`, `at`, `fingerprint`, `tokens`, and the counts `findings` and `chunks`) on `get_capture` and `list_captures`; the whole document is `get_record_context`'s, see [Media findings](/cloud/media#the-findings-document).
 
 ## What an agent cannot do
 

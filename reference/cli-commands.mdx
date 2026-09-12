@@ -88,7 +88,7 @@ bowerbirds cloud captures <owner>/<slug> [--limit N] [--since RFC3339]
 bowerbirds cloud recording process <bucket-slug> <item-id> --template <id> [--frames seconds,...] [--follow]
 bowerbirds cloud records <list|payload|search|show|context|move|trash|sign|unsign|push-capture|edit-text|copy>
 bowerbirds cloud records list <owner/slug[/path]> [--exact] [--kind a,b] [--since RFC3339] [--signed|--unsigned] [--limit N] [--cursor c]
-bowerbirds cloud records context <owner/slug> <record-id> [--part summary|segments|transcript|moments] [--refresh]
+bowerbirds cloud records context <owner/slug> <record-id> [--part summary|findings|chunks] [--refresh] [--json]
 bowerbirds cloud records push-capture <owner/slug[/path]> --image <png|jpg> [--original <png>] [--session <json>] [--title t] [--content text] [--tags a,b]
 bowerbirds cloud records sign|unsign <owner/slug> --ids <id,id>
 bowerbirds cloud records move <owner/slug[/path]> --ids <id,id> --to <owner/slug[/path]>
@@ -118,7 +118,7 @@ bowerbirds cloud web-captures <list|mint|rename|origins|set-disabled|set-recordi
 bowerbirds cloud usage
 ```
 
-`records context` reads what the [media processor](/cloud/media#from-the-cli) learned about a record; `--refresh` recomputes it and spends the workspace's credits.
+`records context` reads the findings the [media processor](/cloud/media#from-the-cli) condensed a record's media into — the summary, each finding with its chunk references and quotes, the chunk table and what it cost; `--refresh` recomputes it and spends the workspace's credits.
 
 Use `--workspace <id-or-slug>` with cloud commands to target a workspace without switching. Add `--token <bbt_…>` (or set `BOWERBIRDS_TOKEN`) to act as an agent token instead of the signed-in person; a `tokens login` credential is used when neither is set. `tokens mint --role` offers `read`, `contribute` and `admin`; the `router` role is minted through the tokens door for now, see [External routers](/cloud/external-routers#the-router-role).
 

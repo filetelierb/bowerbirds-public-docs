@@ -31,7 +31,7 @@ The credential lives in `~/.bowerbirds/agent-token.json` (mode 600) and refreshe
 bowerbirds cloud records list me/qa/login --kind capture,note --unsigned --limit 50 --json
 bowerbirds cloud records list me/qa --since 2026-09-01T00:00:00Z --cursor <cursor>
 bowerbirds cloud records show me/qa <item-id> --json
-bowerbirds cloud records context me/qa <item-id> [--part summary|segments|transcript|moments] [--refresh]
+bowerbirds cloud records context me/qa <item-id> [--part summary|findings|chunks] [--refresh]
 bowerbirds cloud records push-capture me/qa/login --image annotated.png --original raw.png \
   --session session.json --title "Login form" --content "Global comments:\n 1. Button off-center"
 bowerbirds cloud records move me/qa --ids <id,id> --to me/archive/done
@@ -40,7 +40,7 @@ bowerbirds cloud records sign me/qa --ids <id,id>
 bowerbirds cloud records unsign me/qa --ids <id,id>
 ```
 
-Locations are `owner/slug[/directory/path]`; `me` is the token's workspace. `--signed` and `--unsigned` filter on the token's own mark, and `--json` answers `signed` on every row. `records context` reads what the [media processor](/cloud/media) learned about a recording, audio, PDF or set of pictures; `--refresh` recomputes it and spends the workspace's credits. See [Agent tokens](/mcp/agent-tokens) for minting, listing and revoking:
+Locations are `owner/slug[/directory/path]`; `me` is the token's workspace. `--signed` and `--unsigned` filter on the token's own mark, and `--json` answers `signed` on every row. `records context` reads the findings the [media processor](/cloud/media) condensed a recording, audio file, PDF or set of pictures into; `--refresh` recomputes it and spends the workspace's credits. See [Agent tokens](/mcp/agent-tokens) for minting, listing and revoking:
 
 ```sh
 bowerbirds cloud tokens mint --label "ci reviewer" --role contribute [--bucket me/qa]

@@ -61,10 +61,10 @@ The MCP door advertises these to a router-role token beside the [ordinary tools]
 | `list_routes` | The Bucket's router and its routes: destinations, connectors with their `tools.enabled` and `tools.disabled`, description, goal, rules, skills, `trustedExternalCreate`; whether this token is the brain; the running cycle |
 | `claim_cycle` | Takes the Bucket's cycle marker under a lease (default 10 minutes, at most 60) and answers the `cycleId` the marks carry. Refused with the holder while another run — yours or the fleet's — is on the Bucket |
 | `renew_cycle` / `release_cycle` | Extends the lease; lets it go when the run is done |
-| `derive_record` | A new record from a source — `split` or `augment` — with provenance, depth and the source's payload bytes copied, filed at a path or Bucket inside the route's destinations. The source is never written; landing in the same Bucket, the derived record is signed `routed` at birth |
-| `sign_items` (`items` shape) | The source's route marks and router mark with a status and one link per route |
+| `derive_record` | A new record from a source — `split` or `augment` — with provenance, depth and the source's payload bytes copied, filed at a path or Bucket inside the route's destinations. With `mergeInto` (a Package's id) the derived record joins that Package as its next scene; with `related` (record ids) a new Package is made of those records and the derived one — the merge decision, after `search_records` found what the findings relate to. The source is never written; landing in the same Bucket, the derived record is signed `routed` at birth |
+| `sign_items` (`items` shape) | The source's route marks and router mark with a status and one link per route: `{route, kind derive\|merge\|create\|append\|link\|none, destination, connectorId, target, tool, findings}` |
 
-Two more tools read and compute a record's [media context](/cloud/media#mcp-tools): `get_record_context` (any token, free) answers the digest, signals, entities, screens and timed moments the platform's processor filed, or one part of it; `process_media` (router role only) computes it now and **charges the workspace's credits** — an external router's own model is free, the platform's processor is not. Read the context before deciding; ask for a part when the digest is not enough; process only a record that has no context.
+Four more tools stand behind every routing decision; see [Media findings](/cloud/media#mcp-tools). `get_record_context` (any token, free) answers the summary and findings the platform's processor condensed a record's media into, each with the chunk and moment it came from, or one `part` of it. `get_media_chunk` (free) answers what the processor observed in one chunk, when a description is not detail enough. `search_records` and `get_record` (free) are how a route looks for what the destination **already holds** before it files anything. `process_media` (router role only) computes a record's findings now and **charges the workspace's credits** — an external router's own model is free, the platform's processor is not, so process only a record that has none.
 
 ### `derive_record`
 
@@ -81,7 +81,16 @@ Two more tools read and compute a record's [media context](/cloud/media#mcp-tool
 }
 ```
 
-`bucket` defaults to the same Bucket; `copyPayloads` defaults to `true`; `route` may be omitted when the router has exactly one. The answer names the derived record's id and the source's status (`processed`). The gate refuses a derivation past depth 3, more than 5 from one source in a day, or outside the route's paths and Buckets.
+`bucket` defaults to the same Bucket; `copyPayloads` defaults to `true`; `route` may be omitted when the router has exactly one. The answer names the derived record's id, the Package it joined or made, and the source's status (`processed`). The gate refuses a derivation past depth 3, more than 5 from one source in a day, or outside the route's paths and Buckets.
+
+To **merge** instead — the decision after a search found what the findings relate to — add one of:
+
+```json
+{ "mergeInto": "<package-id>" }
+{ "related": ["<record>", "<record>"] }
+```
+
+`mergeInto` places the derived record into that Package as its next scene; `related` makes a new Package of those records and the derived one. `path` must then be the Package's own directory (or the related records'), and it is judged against the route's allowlist like any derivation. A record may not be merged into by its own route's dispatch about itself — a merge writes the Package, and the source of a merge is never written.
 
 ### `sign_items` with `items`
 
@@ -100,7 +109,7 @@ Two more tools read and compute a record's [media context](/cloud/media#mcp-tool
 }
 ```
 
-One link per route per record. A `derive` names the derived record's id as `destination` (and `bucket`, `path`); `create` and `append` name the item, `connectorId`, `target` and the `tool` used; `link` names the item, `connectorId` and `target`; `none` names nothing. The status must agree with the links — `kept` only when every route said `none`, `processed` when something was derived, `routed` when the record was dispatched externally, `pending` only when a route still owes a report — and the answer says per record whether it was signed, what was refused and why. Records signed as the router are also signed by the token, so `list_items` with `signed: false` is still its queue.
+One link per route per record. A `derive` names the derived record's id as `destination` (and `bucket`, `path`); a `merge` names the Package; `create` and `append` name the item, `connectorId`, `target` and the `tool` used; `link` names the item, `connectorId` and `target`; `none` names nothing. Every link may carry `findings`, the ids the decision rested on, so an external brain's marks say what a native cycle's do. The status must agree with the links — `kept` only when every route said `none`, `processed` when something was derived or merged, `routed` when the record was dispatched externally, `pending` only when a route still owes a report — and the answer says per record whether it was signed, what was refused and why. Records signed as the router are also signed by the token, so `list_items` with `signed: false` is still its queue.
 
 Without `cycle`, the marks carry the cycle the token holds, or one minted for the call; claim a cycle first so other runs stay off the Bucket while you work.
 
@@ -130,14 +139,14 @@ The [Bowerbirds plugin](/integrations/plugins) ships the loop as a command for C
   <Step title="Fetch the unsigned">
     `list_items` with `signed: false`, paging on `cursor`; `get_capture` for content and payload URLs.
   </Step>
-  <Step title="Read the context">
-    `get_record_context` for a record that carries a `context` stamp: the digest and signals first, a `part` (`summary`, `segments`, `transcript`, `moments`) when they are not enough. A record with none is decided from its content and payloads; `process_media` computes one but spends the workspace's credits, so it is for a record that has no context, not a habit.
+  <Step title="Read the findings">
+    `get_record_context` for a record that carries a `context` stamp: the summary first, then the findings with their chunk references, and a `part` (`summary`, `findings`, `chunks`) when the whole document is more than you need. `get_media_chunk` opens one chunk's observations when a description is not detail enough. A record with no stamp is decided from its content and comments; `process_media` computes one but spends the workspace's credits, so it is for a record that has none, not a habit.
   </Step>
-  <Step title="Decide per record, per route">
-    One of `derive`, `create`, `append`, `link`, `none`, with a reason and a confidence. A record may fit several routes; several records may be one thing.
+  <Step title="Delegate finding by finding">
+    Read each finding's description against each route's description and goal. A finding may go to several routes; a route may receive several findings; a finding that fits no route stays unrouted and is reported, never invented into one. Hand each route only its findings, the chunk references and the source record's id.
   </Step>
   <Step title="Look before acting">
-    Search the destination with the route's enabled read tools. An existing item turns a create into an append or a link; the links other runs recorded are the dedupe memory.
+    Search the destination first: `search_records` (scoped to the route's destination paths) and `get_record` inside the workspace, the route's enabled read tools outside it. Then decide — `merge` beside the related record, `update` the item you found, `create` a new one linked to its relatives, or `nothing` with a one-line reason. An existing item turns a create into an append or a link; the links other runs recorded are the dedupe memory.
   </Step>
   <Step title="Act through two doors only">
     `derive_record`, and the route's enabled connector tools for `create` and `append`. A route with `trustedExternalCreate: false` does not create yet; the record is reported as needing a person.
