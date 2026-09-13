@@ -1,10 +1,10 @@
 ---
 title: "Routers"
-description: "One router per Bucket dispatches what lands there: routes, connectors and tool grants, the gate, signatures with a status, cleanup by status, credits and the attention queue."
+description: "A router supervises one or more Buckets and dispatches what lands there: scope and filters, routes, connectors and tool grants, the gate, signatures with a status, cleanup by status, credits and the attention queue."
 icon: "route"
 ---
 
-A **router** sits on one Bucket and dispatches every record that lands there. It is one of three kinds: a **direct** router (a rule table with an optional formatting step), an **agentic** router (Bowerbirds AI triages each record to one or more routes), or an **external** router (your own coding agent runs the loop on its own model). A **route** is one destination scope of the router: where it may write, which connector tools it may use, and the description, goal and rules that decide when a record belongs to it.
+A **router** supervises one or more Buckets and dispatches every record that lands in them. A Bucket has at most one router, and the router — not the Bucket — is what claims a cycle, spends credits and signs. It is one of three kinds: a **direct** router (an ordered list of routes with an optional formatting step), an **agentic** router (Bowerbirds AI triages each record to one or more routes), or an **external** router (your own coding agent runs the loop on its own model). A **route** is one destination scope of the router: where it may write, which connector tools it may use, and the description, goal and rules that decide when a record belongs to it.
 
 A router document that names no `kind` is read as `agentic`.
 
@@ -12,7 +12,7 @@ A router document that names no `kind` is read as `agentic`.
 
 <CardGroup cols={2}>
   <Card title="One router per Bucket" icon="1">
-    Attaching a second router to a Bucket is refused. Anything the Bucket needs is a route of its one router, so no two automations argue over a record.
+    A router may supervise several Buckets; a Bucket may be supervised by only one. Attaching a Bucket another router already holds is refused, naming the Bucket and the router that holds it, so no two automations argue over a record.
   </Card>
   <Card title="Routers only add" icon="plus">
     A route never moves, edits or trashes a source record. It derives new records inside the workspace, or creates, appends to or links items at external destinations. Deleting is a cleanup policy's job.
@@ -29,9 +29,9 @@ A router document that names no `kind` is read as `agentic`.
 
 | Kind | How it decides | Example | Credits |
 | --- | --- | --- | --- |
-| `direct` | A rule table over the Bucket: kind, path, tag, keyword or age → destination, first match wins unless a route fans out. An optional formatting step renders a template, or asks Bowerbirds AI to shape the title and body for the destination. | Records landing under `bugs/` in a Web Capture intake become Linear issues with a generated title and reproduction steps. | Formatting step only |
-| `agentic` | Bowerbirds AI reads each record and delegates it to every route whose description fits, with a hint of which part is theirs. Each route searches its destination with the read tools it enabled and answers per record. | A "product feedback" Bucket with routes "Bug → Linear", "Feature idea → Notion", "Internal → team notes". | Metered per cycle |
-| `external` | Your own agent — Claude Code, Codex or any MCP client — holds a token with the `router` role and runs the same loop through the MCP door. | `/bowerbirds-route feedback` from your terminal every morning. See [External routers](/cloud/external-routers). | Zero |
+| `direct` | An **ordered list** of routes. What it gathers at all is the router's own scope; the record then goes to the first route whose destination is reachable, or to every reachable route when the router fans out. An optional formatting step renders a template, or asks Bowerbirds AI to shape the title and body for the destination. | A Web Capture intake watched under `bugs/*`: what lands there becomes a Linear issue with a generated title and reproduction steps. | Formatting step only |
+| `agentic` | Bowerbirds AI reads each record and delegates it to every route whose description fits, with a hint of which part is theirs. Each route searches its destination with the read tools it enabled and answers per record. | One router over the `feedback` and `meetings` Buckets, with routes "Bug → Linear", "Feature idea → Notion", "Decisions → team notes". | Metered per cycle |
+| `external` | Your own agent — Claude Code, Codex or any MCP client — holds a token with the `router` role and runs the same loop through the MCP door. A Bucket is still how the agent reaches it; the claim covers every Bucket that router supervises. | `/bowerbirds-route feedback` from your terminal every morning. See [External routers](/cloud/external-routers). | Zero |
 
 ## What a route is
 
@@ -39,9 +39,15 @@ A router document that names no `kind` is read as `agentic`.
 {
   "name": "Product feedback",
   "kind": "agentic",
-  "goal": "Dispatch what lands in the feedback Bucket.",
-  "records": { "bucket": { "owner": "me", "slug": "feedback" } },
-  "trigger": { "arrival": { "bucket": { "slug": "feedback" }, "threshold": 5, "debounceMinutes": 10 } },
+  "goal": "Dispatch what lands in the feedback and meetings Buckets.",
+  "scope": {
+    "buckets": [
+      { "owner": "me", "slug": "feedback" },
+      { "owner": "me", "slug": "meetings", "paths": ["reviews", "customer-calls/*"] }
+    ],
+    "filters": { "kinds": ["capture", "note", "recording"], "keywords": ["bug", "broken"], "ageDays": 90 }
+  },
+  "trigger": { "arrival": { "threshold": 5, "debounceMinutes": 10 } },
   "budget": { "monthlyCredits": 200 },
   "routes": [
     {
@@ -49,10 +55,7 @@ A router document that names no `kind` is read as `agentic`.
       "name": "Bug → Linear issue",
       "description": "A capture or note that reports something broken, wrong or unexpected.",
       "goal": "One Linear issue per distinct bug; a comment on the existing issue when it is already filed.",
-      "rules": {
-        "text": "Search before creating. Never close or edit an existing issue.",
-        "filters": [{ "field": "kind", "op": "in", "value": ["capture", "note"] }]
-      },
+      "rules": { "text": "Search before creating. Never close or edit an existing issue." },
       "skills": ["bowerbirds-records"],
       "connectors": [{
         "connectorId": "linear",
@@ -66,23 +69,30 @@ A router document that names no `kind` is read as `agentic`.
     {
       "name": "Internal notes",
       "description": "A note a teammate wrote about our own process.",
-      "rules": { "filters": [{ "field": "tag", "op": "has", "value": "internal" }] },
+      "rules": { "text": "Keep the team's own words; nothing here leaves the workspace." },
       "destinations": { "paths": ["team/notes/*"], "buckets": ["inbox"] }
     }
   ]
 }
 ```
 
-- **Scope.** `records.bucket` is the whole Bucket. A router cannot narrow its scope to ids or a query, and cannot attach a second Bucket: what a route should skip goes in that route's rules.
-- **Trigger.** A record arriving (`threshold` records since the last decision, `debounceMinutes` of quiet), a `schedule` with a `cron`, a manual run, or an answered question. One cycle runs at a time per Bucket; a second start joins the next.
+- **Scope.** `scope.buckets` lists the Buckets this router supervises — several is normal, and a Bucket may be supervised by only one router. Each entry may narrow to `paths` inside *that* Bucket, in the same grammar destinations speak: a bare `reviews` is that folder exactly, `customer-calls/*` is the folder and everything under it, and several paths are ORed. No `paths` at all is the whole Bucket. At most 16 Buckets, at most 8 paths each. A router with no Bucket is legal, gathers nothing, and says so when you run it — `it has no bucket yet: add one to its scope (scope.buckets)`. Attaching a Bucket another router holds is refused on create *and* on edit, naming both:
+
+  ```text
+  bucket "bugs" already has a router, "Triage" (rtr_2): a bucket has at most one router — add a route to that one instead
+  ```
+
+  A router cannot narrow its scope to record ids or a query. Listing the same Bucket twice is refused too — `bucket "bugs" is listed twice: put every path on the one entry`.
+- **Filters.** `scope.filters` decides what the router gathers at all, and applies to **every** Bucket it supervises: `kinds` (from `capture`, `recording`, `dictation`, `scratchpad`, `clipboard`, `note`, `file`, `rfi`), `keywords` (matched over the title, the body and the tags) and `ageDays` (nothing older than that many days). Kinds are ORed with each other, keywords are ORed with each other, and the three groups are ANDed. Path is the one filter that is not global: a path only means something inside one Bucket, so it lives on that Bucket's entry.
+- **Trigger.** A record arriving in **any** supervised Bucket, under that Bucket's paths (`threshold` records since the last decision, `debounceMinutes` of quiet), a `schedule` with a `cron`, a manual run, or an answered question. The arrival watch names no Bucket of its own: one threshold and one debounce for the router, and a Bucket added to the scope is watched from that moment. One cycle runs at a time per **router**, gathering across every Bucket it supervises; a second start joins the next.
 - **Destinations** are the allowlist the gate enforces: `paths` (`bucket/path` or `bucket/path/*`) and `buckets` of the workspace a derivation may land in, and `external` targets inside a linked connector (a Linear team, a GitHub repository, a Notion database). A direct route's external destination also names the `tool` it creates with.
 - **Connectors and tool grants.** A route links the workspace connectors it needs and enables or disables each tool by name. Tools in neither list take the connector's default: read-only tools on, destructive tools off, everything off when the server annotates nothing. The enabled read tools are what the route holds while it looks; the enabled write tools bound what the applier may call for that route.
 - **Description and goal** are written for Bowerbirds AI: the description is how a record is delegated here, the goal is what the route then tries to do with it.
-- **Rules** are prose plus filter chips the gate checks deterministically: `kind` (`is`, `isNot`, `in`, `notIn`), `path` (`startsWith`), `tag` and `keyword` (`has`, `hasNot`) and `ageDays` (`atMost`). A direct route with no chips is the catch-all row. Rules only narrow which records a route may take; what a route is *for* is its description and goal, and that is what the orchestrator reads a record's findings against.
+- **Rules** are prose — `rules.text` — carried into the route's own instructions. A route carries no filters of its own: what the router gathers at all is `scope.filters` and each Bucket's paths, and which route takes a record is its description and goal on an agentic router, or its position in the list on a direct one.
 - **Media** is the router's option for the [media processor](/cloud/media#the-routers-media-option): `"media": { "process": "auto", "videoResolution": "low" }` condenses every gathered record's recordings, audio, PDFs and pictures into findings before the cycle delegates, so a route decides from detailed descriptions with chunk references rather than a title and a few stills. Agentic routers only — a direct router never runs the stage.
 - **Skills** are workspace skills by id, snapshotted into the run. A plugin can ship a route template with all of this plus the connector it expects; see [Plugins](/integrations/plugins).
 - **Trust** is earned per route. Links, appends and derivations run unattended from the first cycle. Creating an external item asks a person until the route's first accepted create, then runs unattended.
-- **Direct routes only:** `fanOut: true` lets a matched record continue to the routes after it; `format: { "template": "…", "prompt": "…" }` shapes what reaches the destination — a template over `.Title`, `.Content`, `.Kind`, `.Path`, `.Tags`, `.Comments` is rendered with no model call; a prompt asks Bowerbirds AI and is metered like any call.
+- **Direct routers only:** the routes are tried in the **order they are arranged**, and the first route whose destination is reachable takes the record. `"fanOut": true` on the **router** (not on a route) lets every reachable route take it instead. A route with nowhere to go — an internal Bucket that is gone, or a connector the route no longer links — is skipped with its reason on the run report and the next route is tried; a record no route could take answers `none` and the router signs it `kept`. A connector that is linked but not answering right now **parks** the record rather than letting the next route have it, because a record a rule aimed at Linear should wait for Linear. `format: { "template": "…", "prompt": "…" }` shapes what reaches the destination — a template over `.Title`, `.Content`, `.Kind`, `.Path`, `.Tags`, `.Comments` is rendered with no model call; a prompt asks Bowerbirds AI and is metered like any call.
 
 ## The dispatch vocabulary
 
@@ -104,21 +114,21 @@ The lattice is `none < link < append < derive < create`; `merge` is judged as a 
 
 ```mermaid
 graph LR
-  A[Record arrives, schedule ticks, or a person runs it] --> G[Gather: the Bucket minus what the router signed at the current version]
+  A[Record arrives, schedule ticks, or a person runs it] --> G[Gather: every supervised Bucket minus what the router signed at the current version]
   G --> C{Credits and storage cover it?}
   C -->|No| P[Pause: sources freeze as pending, inbox says what is missing]
   C -->|Yes| M[Media: recordings, audio, PDFs and pictures become each record's context]
-  M --> T[Triage: rule table, or Bowerbirds AI delegates each record to the routes that fit]
+  M --> T[Triage: the routes in order, or Bowerbirds AI delegates each record to the routes that fit]
   T --> R[Routes look at their destinations and propose]
   R --> K[Gate validates every dispatch]
   K --> W[Applier writes once, then signs route marks and the router mark]
   K --> Q[Exceptions to the attention queue]
 ```
 
-1. **Gather.** The Bucket's records minus those the router already signed at their current fingerprint. Records with partial route marks from an earlier cycle go only to the routes still missing.
+1. **Gather.** Every supervised Bucket's records — under that Bucket's paths, narrowed by the router's global filters — minus those the router already signed at their current fingerprint. One cycle covers all of them, and each record keeps the Bucket it belongs to. Records with partial route marks from an earlier cycle go only to the routes still missing.
 2. **Pre-flight.** Credits and storage are checked against the record count — and the media the records carry — before anything is spent.
 3. **Media.** On an agentic router, each gathered record with media and no current findings document is condensed by the [media processor](/cloud/media) into a summary and findings, each citing the chunk and moment it came from. A record already read at its current version costs nothing again; one whose media is still uploading is deferred, unsigned, to the next cycle.
-4. **Delegate.** A direct router evaluates its rule table. An agentic router reads each finding's description against each route's description and goal and answers a delegation table: which findings go to which route, and why. A finding may go to several routes; one that fits no route is reported unrouted, never invented into one. A record with no media is delegated on its own words — one finding per numbered comment, or per paragraph.
+4. **Delegate.** A direct router tries its routes in order. An agentic router reads each finding's description against each route's description and goal and answers a delegation table: which findings go to which route, and why. A finding may go to several routes; one that fits no route is reported unrouted, never invented into one. A record with no media is delegated on its own words — one finding per numbered comment, or per paragraph.
 5. **Route.** Each delegated route receives only its findings, the chunk references and the source record's id. It searches its destination for what already exists — `search_records` and `get_record` inside the workspace, the connector's read tools outside it, `get_media_chunk` when a description is not detail enough — and then answers: merge beside the related record, update the existing item, create a new one linked to its relatives, or nothing.
 6. **Gate.** Every dispatch is validated; see the table below. The plan that survives is the plan that runs.
 7. **Apply and sign.** One applier writes: derived records with provenance and copied bytes, external items through the linked connector, each checked against the source's existing links so a retry never creates twice. It signs a route mark per route with the destination item's id, then the router mark with its status once every delegated route reported.
@@ -140,7 +150,7 @@ graph LR
 | `none` from every route | Router status `kept` |
 | No route fits | Kept, marked; asked only if the router asked |
 
-A direct router reaches the ask row only on a failed integration or a rule that names a connector nobody has connected.
+A direct router reaches the ask row only on a failed integration or a route that names a connector nobody has connected.
 
 ## Signatures and statuses
 
@@ -156,13 +166,13 @@ Two levels of mark live beside every record the router handled:
 | `kept` | Every route said `none` |
 | `pending` | A route still owes an answer, or the workspace's routers are paused |
 
-Marks carry the fingerprint the record had when it was signed. An edited source is fresh again to the router; a record moved into another Bucket is fresh to that Bucket's router. A derived record placed in the same Bucket is signed `routed` at birth so it is never re-derived.
+Marks carry the fingerprint the record had when it was signed. An edited source is fresh again to the router; a record moved into another Bucket is fresh to the router supervising *that* Bucket. A derived record landing in **any** Bucket this router supervises is signed `routed` at birth, so a router never gathers its own output.
 
 Listings, the record view and the MCP door answer the same reading on every record: `routerStatus {status, cycleId, at, missing}`, `links [{route, kind, destination}]` and `derivedFrom`. The apps show them as chips — "routed → Linear ENG-123", "kept", "pending on bugs" — and a derived record shows its origin.
 
 ## Cleanup by status
 
-A Bucket with a router fills with sources that have already become something else. The Bucket's cleanup policy gains a rule kind beside `retentionDays`, set by an administrator on the Bucket:
+A supervised Bucket fills with sources that have already become something else. The Bucket's cleanup policy gains a rule kind beside `retentionDays`, set by an administrator on the Bucket:
 
 ```json
 { "cleanupRules": [{ "kind": "routerStatus", "status": "routed", "olderThanDays": 7 }] }
@@ -217,4 +227,4 @@ bowerbirds cloud routers run <router-id> [--items id,id] [--follow]
 bowerbirds cloud routers runs <router-id> [--cost]
 ```
 
-`cloud routers create` refuses a second router on a Bucket with a sentence naming the first. Deleting a router keeps its marks on records and the runs it filed. See [Cloud CLI workflows](/cli/cloud-workflows#routers) for connectors, plugins and skills, and [External routers](/cloud/external-routers) for a router your own agent drives.
+`cloud routers create` refuses a Bucket that already has a router, naming the Bucket and the router that holds it — and it names every such Bucket at once, not the first. Deleting a router keeps its marks on records and the runs it filed. See [Cloud CLI workflows](/cli/cloud-workflows#routers) for connectors, plugins and skills, and [External routers](/cloud/external-routers) for a router your own agent drives.

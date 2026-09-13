@@ -91,15 +91,15 @@ Moves follow the app's rules: write access on both sides, a record in the Trash 
 
 ## Routing tools
 
-A token with the `router` role is a Bucket's [external router](/cloud/external-routers): the Bucket's router document names it as the brain, and the door advertises five more tools to it. They write the same route marks and router status a native router writes, and every write is judged by the same gate first.
+A token with the `router` role is an [external router](/cloud/external-routers)'s brain: the router supervising a Bucket names it, and the door advertises five more tools to it. A Bucket is the address; the **router** is what a cycle claims and what signs, and it may supervise several Buckets. They write the same route marks and router status a native router writes, and every write is judged by the same gate first.
 
 | Tool | Purpose |
 | --- | --- |
-| `list_routes` | The Bucket's router and its routes: destinations, connectors with their tool grants, description, goal, rules, and whether the route may create external items unattended |
-| `claim_cycle` | Take the Bucket's cycle marker under a lease (10 minutes by default, at most 60) and receive the `cycleId` the marks carry |
+| `list_routes` | The router supervising this Bucket: every Bucket it supervises with the folders it watches in each and whether this token can read it, its global `kinds`/`keywords`/`ageDays` filters, and its routes — destinations, connectors with their tool grants, description, goal, rules as prose, and whether the route may create external items unattended |
+| `claim_cycle` | Take the **router's** cycle marker under a lease (10 minutes by default, at most 60) and receive the `cycleId` the marks carry. One cycle covers every Bucket the router supervises |
 | `renew_cycle` / `release_cycle` | Extend the lease; let it go when the run is done |
 | `derive_record` | A new record from a source — `split` or `augment` — with provenance and the source's payload bytes copied, inside the route's destinations. With `mergeInto` or `related` it lands in a Package beside what it relates to. The source is never written |
-| `sign_items` with `items` | The source's route marks and router mark: a `status` (`pending`, `kept`, `routed`, `processed`) and one link per route (`derive`, `merge`, `create`, `append`, `link`, `none`) with the destination item's id and, optionally, the finding ids it rested on |
+| `sign_items` with `items` | The source's route marks and router mark: a `status` (`pending`, `kept`, `routed`, `processed`) and one link per route (`derive`, `merge`, `create`, `append`, `link`, `none`) with the destination item's id and, optionally, the finding ids it rested on. `slug` names the Bucket those records are in, so a brain that read several signs once per Bucket |
 
 `sign_items` keeps its plain `ids` shape for every role: a token's own mark, unchanged. A `router` token calling `move_items` or `trash_items` is refused with `router_role`; routers only add.
 

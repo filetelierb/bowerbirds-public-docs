@@ -44,7 +44,7 @@ Visitor submissions are attributed as web activity and do not imply a verified p
 
 ## Routing submitted reports
 
-A submitted capture stays in its intake until a person files it or the intake's **router** dispatches it. The classification policy that used to live on an intake is retired; what it did — a rule per destination, an optional Bowerbirds AI step to shape the record, a spend ceiling — is a **direct router** attached to the intake Bucket, with one route per destination and a monthly budget. An intake has at most one router, and routers only add: a report is derived into the workspace or dispatched to a connected tool, and the source stays in the intake until a cleanup rule retires it. See [Routers](/cloud/routers).
+A submitted capture stays in its intake until a person files it or the intake's **router** dispatches it. The classification policy that used to live on an intake is retired; what it did — a rule per destination, an optional Bowerbirds AI step to shape the record, a spend ceiling — is a **direct router** supervising the intake Bucket, with one route per destination, tried in the order you arrange them, and a monthly budget. The intake may be the router's only Bucket or one of several, and the router may watch only some of its folders. An intake has at most one router, and routers only add: a report is derived into the workspace or dispatched to a connected tool, and the source stays in the intake until a cleanup rule retires it. See [Routers](/cloud/routers).
 
 Attaching a router is a workspace administrator's decision, like every setting that spends credits.
 

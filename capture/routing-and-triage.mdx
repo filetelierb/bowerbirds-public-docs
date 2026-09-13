@@ -31,13 +31,13 @@ graph TD
 
 ## Classification is a router
 
-Classification on the shared Triage shelf is a **router** attached to the shelf Bucket: a direct router with one route per destination and rule chips (kind, path, tag, keyword, age) the gate checks, or an agentic router whose routes Bowerbirds AI delegates to. Either way the router only adds — it derives a copy into the destination and signs the source with a status, and a cleanup rule on the shelf retires `routed` sources after a grace period — so a record is never silently moved. What used to be the `suggest` mode is the router's attention queue: a route that is not sure asks, with alternatives and a recommendation. See [Routers](/cloud/routers).
+Classification on the shared Triage shelf is a **router** supervising the shelf Bucket: a direct router with one route per destination, tried in the order you arrange them, or an agentic router whose routes Bowerbirds AI delegates to. What the router gathers off the shelf at all is its own scope — the folders it watches there, and its global kind, keyword and age filters. Either way the router only adds — it derives a copy into the destination and signs the source with a status, and a cleanup rule on the shelf retires `routed` sources after a grace period — so a record is never silently moved. What used to be the `suggest` mode is the router's attention queue: a route that is not sure asks, with alternatives and a recommendation. See [Routers](/cloud/routers).
 
 The former classification policy (`suggest`, `both`, `auto`, an allowlist and a fallback) is retired; a workspace administrator attaches a router instead.
 
 ## Web Capture intakes
 
-A Web Capture intake is a separate source with a router of its own; see [Web Capture](/cloud/web-capture#routing-submitted-reports).
+A Web Capture intake is a separate source with a router of its own — or, since a router may supervise several Buckets, a Bucket of the shelf's router alongside the shelf; see [Web Capture](/cloud/web-capture#routing-submitted-reports).
 
 <Warning>
   Destinations stay inside the same workspace or a connected tool. Web Capture intakes and the Triage shelf itself cannot be named as a route's destination.
