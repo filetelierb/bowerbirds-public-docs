@@ -101,7 +101,7 @@ bowerbirds cloud tokens list [--bucket <owner/slug>]
 bowerbirds cloud tokens revoke <id> [--bucket <owner/slug>]
 bowerbirds cloud routers <list|show|create|update|delete|run|runs|attention|answer|apply>
 bowerbirds cloud routers create|update [<router-id>] --file <router.json>
-bowerbirds cloud routers create --kind external --token <token-id> --name <name> --bucket <owner/slug> [--bucket <owner/slug> ...] [--path <bucket>:<path> ...] [--filter kind=<k>|keyword=<w>|ageDays=<n> ...]
+bowerbirds cloud routers create --kind external --token <token-id> --name <name> --bucket <owner/slug> [--bucket <owner/slug> ...] [--path <bucket>:<folder> ...] [--filter kind=<k>|keyword=<w>|ageDays=<n> ...]
 bowerbirds cloud routers run <router-id> [--items id,id] [--follow]
 bowerbirds cloud routers runs <router-id> [--cost]
 bowerbirds cloud routers attention [<router-id>] [--state open|handled]
@@ -119,7 +119,7 @@ bowerbirds cloud web-captures <list|mint|rename|origins|set-disabled|set-recordi
 bowerbirds cloud usage
 ```
 
-`routers create --kind external` takes `--bucket` as many times as the router has Buckets — a Bucket may be supervised by only one router, and a Bucket another router holds is refused by name. `--path <bucket>:<path>` narrows one of those Buckets to a folder (a bare path is that folder exactly, `path/*` is everything under it); `--filter` sets the router's global `kinds`, `keywords` and `ageDays`, which apply to every Bucket it supervises. A direct or agentic router carries routes and is authored in a file, `scope` block included.
+`routers create --kind external` takes `--bucket` as many times as the router has Buckets — a Bucket may be supervised by only one router, and a Bucket another router holds is refused by name. `--path <bucket>:<folder>` narrows one of those Buckets to a folder — a bare folder is that folder exactly, `folder/*` is everything under it, and the `<bucket>` half may be the bare slug or `owner/slug`; `--filter` sets the router's global `kinds`, `keywords` and `ageDays`, which apply to every Bucket it supervises. A direct or agentic router carries routes and is authored in a file, `scope` block included.
 
 `records context` reads the findings the [media processor](/cloud/media#from-the-cli) condensed a record's media into — the summary, each finding with its chunk references and quotes, the chunk table and what it cost; `--refresh` recomputes it and spends the workspace's credits.
 

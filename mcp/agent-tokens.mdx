@@ -13,7 +13,7 @@ An agent acts as its own token, never as a person. A token has one role and one 
 | `read` | The agent fetches records and signs what it handled |
 | `contribute` | The agent also files, moves and trashes records |
 | `admin` | The agent also administers Buckets |
-| `router` | The agent is a Bucket's [external router](/cloud/external-routers): it fetches, files, derives and signs, and is refused by name at every door that moves, edits, restores or trashes a record |
+| `router` | The agent is an [external router](/cloud/external-routers)'s brain — the router supervising a Bucket names the token, and one cycle covers every Bucket that router supervises: it fetches, files, derives and signs, and is refused by name at every door that moves, edits, restores or trashes a record |
 
 Use the narrowest role that supports the workflow. `router` is neither wider nor narrower than `contribute`: it adds everything `contribute` adds and can never take anything away, which is what a routing agent left alone needs.
 

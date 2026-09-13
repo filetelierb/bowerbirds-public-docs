@@ -54,7 +54,7 @@ A router of kind `external` names its brain under `external.tokenId`; the cloud 
 bowerbirds cloud routers create --file router.json
 # or, without a file:
 bowerbirds cloud routers create --kind external --token <token-id> --name "Feedback, routed by my agent" \
-  --bucket me/feedback --bucket me/meetings --path meetings:customer-calls/*
+  --bucket me/feedback --bucket me/meetings --path 'meetings:customer-calls/*'
 ```
 
 The Routers tab lists it with the client's name, its Bucket count and zero credits. The fleet never runs an external router: a scheduled or arrival tick is refused before any model call, because its records dispatch through the agent that drives it.
@@ -138,10 +138,12 @@ The [Bowerbirds plugin](/integrations/plugins) ships the loop as a command for C
 
 <Steps>
   <Step title="Claim">
-    `claim_cycle` naming any Bucket the router supervises; the lease is the **router's** and covers all of them. Stop and report the holder on `cycle_held`, or the sentence when this token is not the router's brain.
+    `claim_cycle` naming a Bucket this token opens; the lease is the **router's** and covers all of them (a bucket-scoped token opens exactly one Bucket and still sees the rest by name). Stop and report the holder on `cycle_held`, or the sentence when this token is not the router's brain.
   </Step>
   <Step title="Read the routes">
     `list_routes` is the allowlist and the map: every supervised Bucket with the folders of each it watches and whether you can read it, the router's global filters, and each route's paths, Buckets, targets and enabled tools. Derive only into a route's paths and Buckets; reach its external targets only with the tools it enables.
+
+    **The scope is yours to apply.** For an external router the gather IS the loop you run: the platform judges what you WRITE, never what you fetch. So ask `list_items` for each watched `path` of each Bucket and for the router's `kinds`, and drop what the `keywords` and the `ageDays` window exclude. A record the scope does not keep is not this router's to route.
   </Step>
   <Step title="Fetch the unsigned">
     `list_items` with `signed: false`, paging on `cursor` — **once per supervised Bucket you can read**, naming each with `slug`; `get_capture` for content and payload URLs.

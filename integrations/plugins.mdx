@@ -21,7 +21,7 @@ From a checkout, without a marketplace: `claude --plugin-dir ./claude`.
 The plugin adds the `bowerbirds` MCP server, the `bowerbirds-records` skill, and two commands:
 
 - `/bowerbirds-triage <bucket>` sweeps a Bucket's unsigned records, acts on each in the repository you are in, and signs it.
-- `/bowerbirds-route <bucket>` runs one routing cycle as the Bucket's [external router](/cloud/external-routers): claim the cycle, read the routes, decide per record per route, act only through `derive_record` and the route's enabled connector tools, sign with the links, release. It needs a token with the `router` role.
+- `/bowerbirds-route <bucket>` runs one routing cycle as an [external router](/cloud/external-routers)'s brain. The Bucket slug is how the router is FOUND, not the whole of what is routed: a router may supervise several Buckets and the cycle covers all of them. Claim the ROUTER's cycle, read the routes and the Bucket list, work each supervised Bucket under the paths and filters the router names, decide per record per route, act only through `derive_record` and the route's enabled connector tools, sign once per Bucket, release once. It needs a token with the `router` role.
 
 ## Codex and ChatGPT
 

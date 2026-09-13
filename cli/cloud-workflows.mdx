@@ -123,7 +123,7 @@ A router supervises one or more Buckets and dispatches what lands in them; a Buc
 bowerbirds cloud routers list
 bowerbirds cloud routers show <router-id>
 bowerbirds cloud routers create --file router.json
-bowerbirds cloud routers create --kind external --token <token-id> --name <name> --bucket <owner/slug> [--bucket <owner/slug> …] [--path <bucket>:<path> …] [--filter kind=<k>|keyword=<w>|ageDays=<n> …]
+bowerbirds cloud routers create --kind external --token <token-id> --name <name> --bucket <owner/slug> [--bucket <owner/slug> …] [--path <bucket>:<folder> …] [--filter kind=<k>|keyword=<w>|ageDays=<n> …]
 bowerbirds cloud routers update <router-id> --file router.json
 bowerbirds cloud routers delete <router-id>
 bowerbirds cloud routers run <router-id> [--items id,id] [--follow]
@@ -133,13 +133,13 @@ bowerbirds cloud routers answer <attention-id> --alternative <n> | --text "<answ
 bowerbirds cloud routers apply <run-item-id> [--strike op-1,op-2]
 ```
 
-- `--bucket` repeats: an external router authored from flags may supervise several Buckets. `--path <bucket>:<path>` narrows one of them to a folder (`--path meetings:customer-calls/*`), and `--filter` sets the router's global filters (`--filter kind=note --filter keyword=bug --filter ageDays=90`). Direct and agentic routers carry routes, so they come from a file with a `scope` block.
+- `--bucket` repeats: an external router authored from flags may supervise several Buckets. `--path <bucket>:<folder>` narrows one of them to a folder (`--path 'meetings:customer-calls/*'` — quote the glob so the shell does not try to expand it; the `<bucket>` half may be the bare slug or `owner/slug`), and `--filter` sets the router's global filters (`--filter kind=note --filter keyword=bug --filter ageDays=90`). Direct and agentic routers carry routes, so they come from a file with a `scope` block.
 - `create` and `update` refuse any Bucket that already has a router, naming every one of them and the router that holds it:
 
   ```text
   bucket "bugs" already has a router, "Triage" (rtr_2): a bucket has at most one router — add a route to that one instead
   ```
-- `run` starts one cycle now over **every** Bucket the router supervises; `--items` limits it to named records, `--follow` streams progress and exits with the parked reason when the cycle pauses for credits or storage. A router with no Bucket refuses: `it has no bucket yet: add one to its scope (scope.buckets)`.
+- `run` starts one cycle now over **every** Bucket the router supervises; `--items` limits it to named records — named records are routed AS NAMED, so the router's filters and its per-Bucket paths are not applied to them — `--follow` streams progress and exits with the parked reason when the cycle pauses for credits or storage. A router with no Bucket refuses: `it has no bucket yet: add one to its scope (scope.buckets)`.
 - `runs --cost` lists each cycle with what it cost.
 - `attention` lists the questions the gate raised — an untrusted external create, a clamp, a tripped breaker, a budget shortfall, a refused connector, or a route's explicit ask — and `answer` picks one of the row's alternatives by number or gives your own words. Answering runs a child cycle over the flagged records only.
 - `apply` writes a reviewed plan for one run item; `--strike` drops the named operations before it is applied.
